@@ -1,4 +1,7 @@
-<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Persiche Ecke POS</title>
@@ -43,21 +46,21 @@
             background: rgba(255, 255, 255, 0.2);
         }
         
-        /* Calculator styles */
-        .calc-btn {
-            @apply bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-lg font-medium rounded-lg transition-colors;
+        /* Category headings */
+        .category-heading {
+            @apply text-lg font-semibold mb-2 mt-4 border-b pb-1;
         }
         
-        .calc-btn-op {
-            @apply bg-primary text-white hover:bg-indigo-600;
+        .food-heading {
+            @apply text-food border-food/30;
         }
         
-        .calc-btn-eq {
-            @apply bg-green-500 text-white hover:bg-green-600;
+        .beverage-heading {
+            @apply text-beverage border-beverage/30;
         }
         
-        .calc-btn-clear {
-            @apply bg-red-500 text-white hover:bg-red-600;
+        .dessert-heading {
+            @apply text-dessert border-dessert/30;
         }
     </style>
 </head>
@@ -75,45 +78,7 @@
             <button id="tab-kitchen" class="px-4 py-3 rounded-lg bg-kitchen text-white font-semibold flex-grow"><i class="fas fa-fire mr-2"></i>Kitchen Orders</button>
             <button id="tab-history" class="px-4 py-3 rounded-lg bg-completed text-white font-semibold flex-grow"><i class="fas fa-history mr-2"></i>Order History</button>
             <button id="tab-config" class="px-4 py-3 rounded-lg bg-config text-white font-semibold flex-grow"><i class="fas fa-cog mr-2"></i>Menu Config</button>
-            <button id="tab-calculator" class="px-4 py-3 rounded-lg bg-gray-600 text-white font-semibold flex-grow"><i class="fas fa-calculator mr-2"></i>Calculator</button>
             <button id="tab-summary" class="px-4 py-3 rounded-lg bg-yellow-600 text-white font-semibold flex-grow"><i class="fas fa-chart-bar mr-2"></i>Sales Summary</button>
-        </div>
-        
-        <!-- Calculator Tab -->
-        <div id="calculator-tab" class="tab-content hidden">
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow max-w-md mx-auto">
-                <h2 class="text-xl font-semibold mb-4 text-gray-600 dark:text-gray-300">Calculator</h2>
-                <div class="calculator-container">
-                    <div class="mb-4">
-                        <input type="text" id="calc-display" class="w-full p-4 text-right text-2xl font-bold border dark:border-gray-700 rounded-lg dark:bg-gray-700" readonly="">
-                    </div>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button class="calc-btn calc-btn-clear p-4" data-action="clear">C</button>
-                        <button class="calc-btn p-4" data-action="backspace">⌫</button>
-                        <button class="calc-btn calc-btn-op p-4" data-action="percent">%</button>
-                        <button class="calc-btn calc-btn-op p-4" data-action="divide">÷</button>
-                        
-                        <button class="calc-btn p-4" data-num="7">7</button>
-                        <button class="calc-btn p-4" data-num="8">8</button>
-                        <button class="calc-btn p-4" data-num="9">9</button>
-                        <button class="calc-btn calc-btn-op p-4" data-action="multiply">×</button>
-                        
-                        <button class="calc-btn p-4" data-num="4">4</button>
-                        <button class="calc-btn p-4" data-num="5">5</button>
-                        <button class="calc-btn p-4" data-num="6">6</button>
-                        <button class="calc-btn calc-btn-op p-4" data-action="subtract">-</button>
-                        
-                        <button class="calc-btn p-4" data-num="1">1</button>
-                        <button class="calc-btn p-4" data-num="2">2</button>
-                        <button class="calc-btn p-4" data-num="3">3</button>
-                        <button class="calc-btn calc-btn-op p-4" data-action="add">+</button>
-                        
-                        <button class="calc-btn p-4" data-num="0">0</button>
-                        <button class="calc-btn p-4" data-num=".">.</button>
-                        <button class="calc-btn calc-btn-eq p-4 col-span-2" data-action="calculate">=</button>
-                    </div>
-                </div>
-            </div>
         </div>
         
         <!-- Sales Summary Tab -->
@@ -175,24 +140,24 @@
                 <div class="lg:col-span-3 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                     <h2 class="text-xl font-semibold mb-4 text-order">Menu Items</h2>
                     
-                    <!-- Menu Category Tabs -->
-                    <div class="flex mb-4 border-b dark:border-gray-700">
-                        <button id="category-all" class="category-tab py-2 px-4 border-b-2 border-order text-order">
-                            <i class="fas fa-th-large mr-1"></i> All
-                        </button>
-                        <button id="category-food" class="category-tab py-2 px-4 border-b-2 border-transparent text-gray-500 dark:text-gray-400">
-                            <i class="fas fa-utensils mr-1"></i> Food
-                        </button>
-                        <button id="category-beverage" class="category-tab py-2 px-4 border-b-2 border-transparent text-gray-500 dark:text-gray-400">
-                            <i class="fas fa-coffee mr-1"></i> Beverages
-                        </button>
-                        <button id="category-dessert" class="category-tab py-2 px-4 border-b-2 border-transparent text-gray-500 dark:text-gray-400">
-                            <i class="fas fa-ice-cream mr-1"></i> Desserts
-                        </button>
-                    </div>
-                    
-                    <div id="menu-items-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
-                        <!-- Menu items will be dynamically inserted here -->
+                    <div id="menu-items-container" class="overflow-y-auto max-h-[70vh] custom-scrollbar">
+                        <!-- Food section -->
+                        <h3 class="category-heading food-heading"><i class="fas fa-utensils mr-2"></i>Food</h3>
+                        <div id="food-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+                            <!-- Food items will be dynamically inserted here -->
+                        </div>
+                        
+                        <!-- Beverage section -->
+                        <h3 class="category-heading beverage-heading"><i class="fas fa-coffee mr-2"></i>Beverages</h3>
+                        <div id="beverage-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+                            <!-- Beverage items will be dynamically inserted here -->
+                        </div>
+                        
+                        <!-- Dessert section -->
+                        <h3 class="category-heading dessert-heading"><i class="fas fa-ice-cream mr-2"></i>Desserts</h3>
+                        <div id="dessert-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                            <!-- Dessert items will be dynamically inserted here -->
+                        </div>
                     </div>
                 </div>
 
@@ -490,13 +455,6 @@
             kitchenOrders: [],
             orderHistory: [],
             orderCounter: 1000, // Starting order number
-            activeCategory: 'all',
-            calculator: {
-                displayValue: '0',
-                firstOperand: null,
-                waitingForSecondOperand: false,
-                operator: null
-            },
             
             // Generate a unique order ID
             generateOrderId() {
@@ -514,7 +472,6 @@
                 this.renderAll();
                 this.updateSalesStats();
                 this.setupEventListeners();
-                this.setupCalculator();
                 this.updateHistoryTotalSales();
             },
             
@@ -926,147 +883,6 @@
                 }
             },
             
-            // Calculator operations
-            setupCalculator() {
-                const calcDisplay = document.getElementById('calc-display');
-                calcDisplay.value = '0';
-                
-                // Number buttons
-                document.querySelectorAll('.calc-btn[data-num]').forEach(button => {
-                    button.addEventListener('click', () => {
-                        this.inputDigit(button.dataset.num);
-                    });
-                });
-                
-                // Action buttons
-                document.querySelectorAll('.calc-btn[data-action]').forEach(button => {
-                    button.addEventListener('click', () => {
-                        const action = button.dataset.action;
-                        
-                        if (action === 'clear') {
-                            this.resetCalculator();
-                        } else if (action === 'backspace') {
-                            this.deleteLastDigit();
-                        } else if (action === 'percent') {
-                            this.inputPercent();
-                        } else if (action === 'calculate') {
-                            this.performCalculation();
-                        } else {
-                            this.handleOperator(action);
-                        }
-                    });
-                });
-            },
-            
-            inputDigit(digit) {
-                const { displayValue, waitingForSecondOperand } = this.calculator;
-                
-                if (waitingForSecondOperand) {
-                    this.calculator.displayValue = digit;
-                    this.calculator.waitingForSecondOperand = false;
-                } else {
-                    this.calculator.displayValue = displayValue === '0' ? digit : displayValue + digit;
-                }
-                
-                this.updateCalculatorDisplay();
-            },
-            
-            inputDecimal() {
-                if (this.calculator.waitingForSecondOperand) {
-                    this.calculator.displayValue = '0.';
-                    this.calculator.waitingForSecondOperand = false;
-                    this.updateCalculatorDisplay();
-                    return;
-                }
-                
-                if (!this.calculator.displayValue.includes('.')) {
-                    this.calculator.displayValue += '.';
-                    this.updateCalculatorDisplay();
-                }
-            },
-            
-            handleOperator(nextOperator) {
-                const { firstOperand, displayValue, operator } = this.calculator;
-                const inputValue = parseFloat(displayValue);
-                
-                if (operator && this.calculator.waitingForSecondOperand) {
-                    this.calculator.operator = nextOperator;
-                    return;
-                }
-                
-                if (firstOperand === null && !isNaN(inputValue)) {
-                    this.calculator.firstOperand = inputValue;
-                } else if (operator) {
-                    const result = this.calculate(firstOperand, inputValue, operator);
-                    this.calculator.displayValue = String(result);
-                    this.calculator.firstOperand = result;
-                }
-                
-                this.calculator.waitingForSecondOperand = true;
-                this.calculator.operator = nextOperator;
-                this.updateCalculatorDisplay();
-            },
-            
-            inputPercent() {
-                const currentValue = parseFloat(this.calculator.displayValue);
-                
-                if (!isNaN(currentValue)) {
-                    this.calculator.displayValue = String(currentValue / 100);
-                    this.updateCalculatorDisplay();
-                }
-            },
-            
-            calculate(firstOperand, secondOperand, operator) {
-                if (operator === 'add') {
-                    return firstOperand + secondOperand;
-                } else if (operator === 'subtract') {
-                    return firstOperand - secondOperand;
-                } else if (operator === 'multiply') {
-                    return firstOperand * secondOperand;
-                } else if (operator === 'divide') {
-                    return firstOperand / secondOperand;
-                }
-                
-                return secondOperand;
-            },
-            
-            deleteLastDigit() {
-                if (this.calculator.displayValue.length > 1) {
-                    this.calculator.displayValue = this.calculator.displayValue.slice(0, -1);
-                } else {
-                    this.calculator.displayValue = '0';
-                }
-                this.updateCalculatorDisplay();
-            },
-            
-            resetCalculator() {
-                this.calculator = {
-                    displayValue: '0',
-                    firstOperand: null,
-                    waitingForSecondOperand: false,
-                    operator: null
-                };
-                this.updateCalculatorDisplay();
-            },
-            
-            performCalculation() {
-                const { firstOperand, displayValue, operator } = this.calculator;
-                const secondOperand = parseFloat(displayValue);
-                
-                if (operator && !isNaN(secondOperand)) {
-                    const result = this.calculate(firstOperand, secondOperand, operator);
-                    this.calculator.displayValue = String(result);
-                    this.calculator.firstOperand = result;
-                    this.calculator.operator = null;
-                    this.calculator.waitingForSecondOperand = false;
-                    this.updateCalculatorDisplay();
-                }
-            },
-            
-            updateCalculatorDisplay() {
-                document.getElementById('calc-display').value = this.calculator.displayValue;
-            },
-            
             // Sales statistics
             updateSalesStats() {
                 if (this.orderHistory.length === 0) {
@@ -1220,34 +1036,33 @@
             },
             
             renderMenuItems() {
-                const container = document.getElementById('menu-items-container');
-                container.innerHTML = '';
+                // Clear all containers
+                document.getElementById('food-items').innerHTML = '';
+                document.getElementById('beverage-items').innerHTML = '';
+                document.getElementById('dessert-items').innerHTML = '';
                 
-                // Filter menu items based on active category
-                const filteredItems = this.activeCategory === 'all' 
-                    ? this.menuItems 
-                    : this.menuItems.filter(item => item.category === this.activeCategory);
+                // Group items by category
+                const foodItems = this.menuItems.filter(item => item.category === 'food');
+                const beverageItems = this.menuItems.filter(item => item.category === 'beverage');
+                const dessertItems = this.menuItems.filter(item => item.category === 'dessert');
                 
-                filteredItems.forEach(item => {
+                // Render each category
+                this.renderCategoryItems(foodItems, 'food-items', 'food', 'utensils');
+                this.renderCategoryItems(beverageItems, 'beverage-items', 'beverage', 'coffee');
+                this.renderCategoryItems(dessertItems, 'dessert-items', 'dessert', 'ice-cream');
+            },
+            
+            renderCategoryItems(items, containerId, category, icon) {
+                const container = document.getElementById(containerId);
+                
+                items.forEach(item => {
                     const button = document.createElement('button');
                     button.className = 'bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition shadow-sm text-left';
-                    
-                    // Add category-specific icon
-                    let icon = 'utensils';
-                    let iconColor = 'text-food';
-                    
-                    if (item.category === 'beverage') {
-                        icon = 'coffee';
-                        iconColor = 'text-beverage';
-                    } else if (item.category === 'dessert') {
-                        icon = 'ice-cream';
-                        iconColor = 'text-dessert';
-                    }
                     
                     button.innerHTML = `
                         <div class="flex justify-between items-center">
                             <div class="font-medium truncate">${item.name}</div>
-                            <div class="${iconColor}"><i class="fas fa-${icon}"></i></div>
+                            <div class="text-${category}"><i class="fas fa-${icon}"></i></div>
                         </div>
                         <div class="text-primary font-bold">$${item.price.toFixed(2)}</div>
                     `;
@@ -1419,25 +1234,24 @@
                 document.getElementById('tab-kitchen').addEventListener('click', () => this.showTab('kitchen-tab'));
                 document.getElementById('tab-history').addEventListener('click', () => this.showTab('history-tab'));
                 document.getElementById('tab-config').addEventListener('click', () => this.showTab('config-tab'));
-                document.getElementById('tab-calculator').addEventListener('click', () => this.showTab('calculator-tab'));
                 document.getElementById('tab-summary').addEventListener('click', () => this.showTab('summary-tab'));
                 
-                // Category Tabs
-                document.getElementById('category-all').addEventListener('click', () => {
-                    this.setActiveCategory('all');
-                });
-                document.getElementById('category-food').addEventListener('click', () => {
-                    this.setActiveCategory('food');
-                });
-                document.getElementById('category-beverage').addEventListener('click', () => {
-                    this.setActiveCategory('beverage');
-                });
-                document.getElementById('category-dessert').addEventListener('click', () => {
-                    this.setActiveCategory('dessert');
+                // Menu Items - event delegation for all category containers
+                document.getElementById('food-items').addEventListener('click', (e) => {
+                    const button = e.target.closest('button');
+                    if (button) {
+                        this.addItemToOrder(button.dataset.id);
+                    }
                 });
                 
-                // Menu Items
-                document.getElementById('menu-items-container').addEventListener('click', (e) => {
+                document.getElementById('beverage-items').addEventListener('click', (e) => {
+                    const button = e.target.closest('button');
+                    if (button) {
+                        this.addItemToOrder(button.dataset.id);
+                    }
+                });
+                
+                document.getElementById('dessert-items').addEventListener('click', (e) => {
                     const button = e.target.closest('button');
                     if (button) {
                         this.addItemToOrder(button.dataset.id);
@@ -1607,22 +1421,6 @@
                 });
             },
             
-            setActiveCategory(category) {
-                this.activeCategory = category;
-                
-                // Update tab styling
-                document.querySelectorAll('.category-tab').forEach(tab => {
-                    tab.classList.remove('border-order', 'text-order');
-                    tab.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
-                });
-                
-                document.getElementById('category-' + category).classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
-                document.getElementById('category-' + category).classList.add('border-order', 'text-order');
-                
-                // Re-render menu items
-                this.renderMenuItems();
-            },
-            
             showTab(tabId) {
                 // Hide all tab contents
                 document.querySelectorAll('.tab-content').forEach(tab => {
@@ -1648,6 +1446,5 @@
             POS.init();
         });
     </script>
-
-
-</body></html>
+</body>
+</html>
