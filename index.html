@@ -16,28 +16,31 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-check-compat.js"></script>
     
     <!-- Firebase Config -->
-    <script>
-        // Initialize Firebase with your secure configuration
-        // SECURITY NOTE: In production, the best practice is to store API keys server-side
-        // Since this is a GitHub Pages app, we'll use App Check to protect our keys
-        const firebaseConfig = {
-            apiKey: "AIzaSyBrorolxR3dmiY8jeXhsrIWR_x64aSV_sY",
-            authDomain: "poshohenheim.firebaseapp.com",
-            projectId: "poshohenheim",
-            storageBucket: "poshohenheim.firebasestorage.app",
-            messagingSenderId: "755978169009",
-            appId: "1:755978169009:web:2bef63525b29980b391090"
-        };
-
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+    
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyBrorolxR3dmiY8jeXhsrIWR_x64aSV_sY",
+        authDomain: "poshohenheim.firebaseapp.com",
+        projectId: "poshohenheim",
+        storageBucket: "poshohenheim.firebasestorage.app",
+        messagingSenderId: "755978169009",
+        appId: "1:755978169009:web:2bef63525b29980b391090"
+      };
+    
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
         
         // Initialize App Check (protects against abuse)
         // IMPORTANT: Replace this with your actual reCAPTCHA site key from Google
         // Get it at: https://www.google.com/recaptcha/admin/create
         const appCheck = firebase.appCheck();
         appCheck.activate(
-            'REPLACE_WITH_YOUR_RECAPTCHA_SITE_KEY', // ← Replace this!
+            '6LcgkDMrAAAAAMUjTMOb8rMK4tXiemU5pAYvNeK0', // ← Replace this!
             true // Debug token for development
         );
         
