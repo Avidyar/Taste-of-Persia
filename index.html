@@ -6,71 +6,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Persiche Ecke POS</title>
     
-    <!-- Firebase App (core) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <!-- Add Firestore -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <!-- Add Authentication -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <!-- Add App Check -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-check-compat.js"></script>
-    
-    <!-- Firebase Config -->
-    <script type="module">
-      // Import the functions you need from the SDKs you need
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
-      // TODO: Add SDKs for Firebase products that you want to use
-      // https://firebase.google.com/docs/web/setup#available-libraries
-    
-      // Your web app's Firebase configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyBrorolxR3dmiY8jeXhsrIWR_x64aSV_sY",
-        authDomain: "poshohenheim.firebaseapp.com",
-        projectId: "poshohenheim",
-        storageBucket: "poshohenheim.firebasestorage.app",
-        messagingSenderId: "755978169009",
-        appId: "1:755978169009:web:2bef63525b29980b391090"
-      };
-    
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-        
-        // Initialize App Check (protects against abuse)
-        // IMPORTANT: Replace this with your actual reCAPTCHA site key from Google
-        // Get it at: https://www.google.com/recaptcha/admin/create
-        const appCheck = firebase.appCheck();
-        appCheck.activate(
-            '6LcgkDMrAAAAAMUjTMOb8rMK4tXiemU5pAYvNeK0', // ← Replace this!
-            true // Debug token for development
-        );
-        
-        // Get Firestore instance
-        const db = firebase.firestore();
-        
-        // Get Auth instance
-        const auth = firebase.auth();
-        
-        // Enable offline persistence
-        db.enablePersistence()
-            .catch(err => {
-                if (err.code === 'failed-precondition') {
-                    console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-                } else if (err.code === 'unimplemented') {
-                    console.warn('The current browser does not support all features required for Firestore persistence.');
-                }
-            });
-            
-        // Sign in anonymously (so Firebase rules can identify this as an authorized user)
-        let authInitialized = false;
-        auth.signInAnonymously()
-            .then(() => {
-                console.log("Signed in anonymously");
-                authInitialized = true;
-            })
-            .catch((error) => {
-                console.error("Error signing in anonymously:", error);
-            });
-    </script>
+    <!-- Firebase Scripts (Compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-check-compat.js"></script>
+
+<script>
+  // Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBrorolxR3dmiY8jeXhsrIWR_x64aSV_sY",
+    authDomain: "poshohenheim.firebaseapp.com",
+    projectId: "poshohenheim",
+    storageBucket: "poshohenheim.firebasestorage.app",
+    messagingSenderId: "755978169009",
+    appId: "1:755978169009:web:2bef63525b29980b391090"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  // Enable reCAPTCHA App Check
+  const appCheck = firebase.appCheck();
+  appCheck.activate('6LcgkDMrAAAAAMUjTMOb8rMK4tXiemU5pAYvNeK0', true); // ← Debug reCAPTCHA key
+
+  // Initialize services
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+
+  // Enable offline persistence
+  db.enablePersistence().catch(err => {
+    if (err.code === 'failed-precondition') {
+      console.warn('Multiple tabs open');
+    } else if (err.code === 'unimplemented') {
+      console.warn('Persistence unsupported');
+    }
+  });
+
+  // Anonymous Sign-In
+  auth.signInAnonymously()
+    .then(() => {
+      console.log("Signed in anonymously");
+    })
+    .catch(error => {
+      console.error("Auth error:", error);
+    });
+</script>
+
+
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
