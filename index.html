@@ -1,10 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com https://www.gstatic.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Persiche Ecke POS</title>
+    
+    <!-- Firebase App (core) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <!-- Add Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBrorolxR3dmiY8jeXhsrIWR_x64aSV_sY",
+            authDomain: "poshohenheim.firebaseapp.com",
+            projectId: "poshohenheim",
+            storageBucket: "poshohenheim.firebasestorage.app",
+            messagingSenderId: "755978169009",
+            appId: "1:755978169009:web:2bef63525b29980b391090"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // Get Firestore instance
+        const db = firebase.firestore();
+        
+        // Enable offline persistence
+        db.enablePersistence()
+            .catch(err => {
+                if (err.code === 'failed-precondition') {
+                    console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+                } else if (err.code === 'unimplemented') {
+                    console.warn('The current browser does not support all features required for Firestore persistence.');
+                }
+            });
+    </script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -62,9 +97,27 @@
         .dessert-heading {
             @apply text-dessert border-dessert/30;
         }
+        
+        /* Sync indicator */
+        .sync-indicator {
+            @apply fixed bottom-4 right-4 bg-white dark:bg-gray-800 p-2 rounded-full shadow-lg z-50 flex items-center space-x-2;
+        }
+        
+        .sync-spinner {
+            @apply animate-spin h-5 w-5 text-primary;
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen transition-colors duration-200">
+    
+    <!-- Sync indicator -->
+    <div id="sync-indicator" class="sync-indicator hidden">
+        <svg class="sync-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span id="sync-status">Syncing...</span>
+    </div>
     
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
@@ -455,39 +508,142 @@
             kitchenOrders: [],
             orderHistory: [],
             orderCounter: 1000, // Starting order number
+            syncStatus: {
+                active: false,
+                lastSynced: null
+            },
+            
+            // Show sync status indicator
+            showSyncIndicator(message = "Syncing...") {
+                this.syncStatus.active = true;
+                document.getElementById('sync-indicator').classList.remove('hidden');
+                document.getElementById('sync-status').textContent = message;
+            },
+            
+            // Hide sync status indicator
+            hideSyncIndicator() {
+                this.syncStatus.active = false;
+                document.getElementById('sync-indicator').classList.add('hidden');
+                this.syncStatus.lastSynced = new Date();
+            },
             
             // Generate a unique order ID
             generateOrderId() {
                 this.orderCounter++;
-                localStorage.setItem('pos_orderCounter', this.orderCounter);
+                this.saveOrderCounter();
                 return 'PE-' + this.orderCounter;
             },
             
-            // Initialize the app from localStorage
+            // Initialize the app from Firebase and localStorage
             init() {
-                this.loadMenuItems();
-                this.loadKitchenOrders();
-                this.loadOrderHistory();
+                this.showSyncIndicator("Initializing...");
+                this.setupFirebaseListeners();
                 this.loadOrderCounter();
-                this.renderAll();
-                this.updateSalesStats();
                 this.setupEventListeners();
-                this.updateHistoryTotalSales();
             },
             
+            // Set up Firebase real-time listeners
+            setupFirebaseListeners() {
+                // Listen for menu items changes
+                db.collection('config').doc('menuItems').onSnapshot(doc => {
+                    if (doc.exists && doc.data().items) {
+                        this.menuItems = doc.data().items;
+                        this.renderMenuItems();
+                        this.renderMenuConfigItems();
+                        this.hideSyncIndicator();
+                    } else {
+                        // If no data in Firebase, load from localStorage or defaults
+                        this.loadMenuItemsFromLocal();
+                    }
+                }, error => {
+                    console.error("Menu items listener error: ", error);
+                    // Fallback to localStorage if Firebase fails
+                    this.loadMenuItemsFromLocal();
+                });
+                
+                // Listen for kitchen orders changes
+                db.collection('kitchenOrders').onSnapshot(snapshot => {
+                    this.showSyncIndicator("Syncing kitchen orders...");
+                    this.kitchenOrders = [];
+                    snapshot.forEach(doc => {
+                        this.kitchenOrders.push(doc.data());
+                    });
+                    this.renderKitchenOrders();
+                    this.hideSyncIndicator();
+                }, error => {
+                    console.error("Kitchen orders listener error: ", error);
+                    // Fallback to localStorage if Firebase fails
+                    this.loadKitchenOrdersFromLocal();
+                });
+                
+                // Listen for order history changes
+                db.collection('orderHistory').onSnapshot(snapshot => {
+                    this.showSyncIndicator("Syncing order history...");
+                    this.orderHistory = [];
+                    snapshot.forEach(doc => {
+                        this.orderHistory.push(doc.data());
+                    });
+                    this.renderOrderHistory();
+                    this.updateSalesStats();
+                    this.updateHistoryTotalSales();
+                    this.hideSyncIndicator();
+                }, error => {
+                    console.error("Order history listener error: ", error);
+                    // Fallback to localStorage if Firebase fails
+                    this.loadOrderHistoryFromLocal();
+                });
+                
+                // Listen for order counter changes
+                db.collection('config').doc('orderCounter').onSnapshot(doc => {
+                    if (doc.exists && doc.data().counter) {
+                        this.orderCounter = doc.data().counter;
+                    }
+                });
+            },
+            
+            // Save order counter to Firebase and localStorage
+            saveOrderCounter() {
+                localStorage.setItem('pos_orderCounter', this.orderCounter);
+                
+                this.showSyncIndicator("Saving order counter...");
+                db.collection('config').doc('orderCounter').set({
+                    counter: this.orderCounter
+                }).then(() => {
+                    this.hideSyncIndicator();
+                }).catch(error => {
+                    console.error("Error saving order counter: ", error);
+                    this.hideSyncIndicator();
+                });
+            },
+            
+            // Load order counter from Firebase, fallback to localStorage
             loadOrderCounter() {
-                const counter = localStorage.getItem('pos_orderCounter');
-                if (counter) {
-                    this.orderCounter = parseInt(counter);
-                }
+                db.collection('config').doc('orderCounter').get()
+                    .then(doc => {
+                        if (doc.exists && doc.data().counter) {
+                            this.orderCounter = doc.data().counter;
+                        } else {
+                            // Fallback to localStorage
+                            const counter = localStorage.getItem('pos_orderCounter');
+                            if (counter) {
+                                this.orderCounter = parseInt(counter);
+                                // Save to Firebase for future use
+                                this.saveOrderCounter();
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error loading order counter: ", error);
+                        // Fallback to localStorage
+                        const counter = localStorage.getItem('pos_orderCounter');
+                        if (counter) {
+                            this.orderCounter = parseInt(counter);
+                        }
+                    });
             },
             
-            // Save and load data from localStorage
-            saveMenuItems() {
-                localStorage.setItem('pos_menuItems', JSON.stringify(this.menuItems));
-            },
-            
-            loadMenuItems() {
+            // Load menu items from localStorage or use defaults
+            loadMenuItemsFromLocal() {
                 const stored = localStorage.getItem('pos_menuItems');
                 if (stored) {
                     this.menuItems = JSON.parse(stored);
@@ -503,37 +659,119 @@
                         { id: '7', name: 'Ice Cream', price: 4.99, category: 'dessert' },
                         { id: '8', name: 'Cake', price: 5.99, category: 'dessert' }
                     ];
-                    this.saveMenuItems();
                 }
+                this.saveMenuItems(); // Save to both localStorage and Firebase
+                this.renderMenuItems();
+                this.renderMenuConfigItems();
             },
             
-            saveKitchenOrders() {
-                localStorage.setItem('pos_kitchenOrders', JSON.stringify(this.kitchenOrders));
-                // Export to CSV whenever orders change
-                this.exportDataToCSV();
-            },
-            
-            loadKitchenOrders() {
+            // Load kitchen orders from localStorage
+            loadKitchenOrdersFromLocal() {
                 const stored = localStorage.getItem('pos_kitchenOrders');
                 if (stored) {
                     this.kitchenOrders = JSON.parse(stored);
+                    this.renderKitchenOrders();
                 }
             },
             
-            saveOrderHistory() {
-                localStorage.setItem('pos_orderHistory', JSON.stringify(this.orderHistory));
-                // Export to CSV whenever history changes
-                this.exportDataToCSV();
-                // Update sales summary
-                this.updateSalesStats();
-                this.updateHistoryTotalSales();
-            },
-            
-            loadOrderHistory() {
+            // Load order history from localStorage
+            loadOrderHistoryFromLocal() {
                 const stored = localStorage.getItem('pos_orderHistory');
                 if (stored) {
                     this.orderHistory = JSON.parse(stored);
+                    this.renderOrderHistory();
+                    this.updateSalesStats();
+                    this.updateHistoryTotalSales();
                 }
+            },
+            
+            // Save and load data functions
+            saveMenuItems() {
+                // Save to localStorage as backup
+                localStorage.setItem('pos_menuItems', JSON.stringify(this.menuItems));
+                
+                // Save to Firebase for syncing
+                this.showSyncIndicator("Saving menu items...");
+                db.collection('config').doc('menuItems').set({
+                    items: this.menuItems
+                }).then(() => {
+                    this.hideSyncIndicator();
+                }).catch(error => {
+                    console.error("Error saving menu items: ", error);
+                    this.hideSyncIndicator();
+                });
+            },
+            
+            saveKitchenOrders() {
+                // Save to localStorage as backup
+                localStorage.setItem('pos_kitchenOrders', JSON.stringify(this.kitchenOrders));
+                
+                // Save to Firebase for syncing
+                this.showSyncIndicator("Saving kitchen orders...");
+                
+                // First delete all existing orders
+                db.collection('kitchenOrders').get()
+                    .then(snapshot => {
+                        const batch = db.batch();
+                        snapshot.forEach(doc => {
+                            batch.delete(doc.ref);
+                        });
+                        return batch.commit();
+                    })
+                    .then(() => {
+                        // Then add all current orders
+                        const batch = db.batch();
+                        this.kitchenOrders.forEach(order => {
+                            const docRef = db.collection('kitchenOrders').doc(order.id);
+                            batch.set(docRef, order);
+                        });
+                        return batch.commit();
+                    })
+                    .then(() => {
+                        this.hideSyncIndicator();
+                        this.exportDataToCSV();
+                    })
+                    .catch(error => {
+                        console.error("Error saving kitchen orders: ", error);
+                        this.hideSyncIndicator();
+                    });
+            },
+            
+            saveOrderHistory() {
+                // Save to localStorage as backup
+                localStorage.setItem('pos_orderHistory', JSON.stringify(this.orderHistory));
+                
+                // Save to Firebase for syncing
+                this.showSyncIndicator("Saving order history...");
+                
+                // First delete all existing history
+                db.collection('orderHistory').get()
+                    .then(snapshot => {
+                        const batch = db.batch();
+                        snapshot.forEach(doc => {
+                            batch.delete(doc.ref);
+                        });
+                        return batch.commit();
+                    })
+                    .then(() => {
+                        // Then add all current history
+                        const batch = db.batch();
+                        this.orderHistory.forEach(order => {
+                            const docRef = db.collection('orderHistory').doc(order.id);
+                            batch.set(docRef, order);
+                        });
+                        return batch.commit();
+                    })
+                    .then(() => {
+                        this.hideSyncIndicator();
+                        this.exportDataToCSV();
+                        this.updateSalesStats();
+                        this.updateHistoryTotalSales();
+                    })
+                    .catch(error => {
+                        console.error("Error saving order history: ", error);
+                        this.hideSyncIndicator();
+                    });
             },
             
             // Menu item operations
@@ -541,8 +779,6 @@
                 const id = Date.now().toString();
                 this.menuItems.push({ id, name, price: parseFloat(price), category });
                 this.saveMenuItems();
-                this.renderMenuItems();
-                this.renderMenuConfigItems();
             },
             
             updateMenuItem(id, name, price, category) {
@@ -550,16 +786,12 @@
                 if (index !== -1) {
                     this.menuItems[index] = { id, name, price: parseFloat(price), category };
                     this.saveMenuItems();
-                    this.renderMenuItems();
-                    this.renderMenuConfigItems();
                 }
             },
             
             deleteMenuItem(id) {
                 this.menuItems = this.menuItems.filter(item => item.id !== id);
                 this.saveMenuItems();
-                this.renderMenuItems();
-                this.renderMenuConfigItems();
             },
             
             // Order operations
@@ -684,7 +916,6 @@
                 
                 this.kitchenOrders.push(newOrder);
                 this.saveKitchenOrders();
-                this.renderKitchenOrders();
                 
                 this.clearOrder();
             },
@@ -702,9 +933,6 @@
                     
                     this.saveKitchenOrders();
                     this.saveOrderHistory();
-                    
-                    this.renderKitchenOrders();
-                    this.renderOrderHistory();
                 }
             },
             
@@ -872,10 +1100,8 @@
                     // Save changes
                     if (orderType === 'kitchen') {
                         this.saveKitchenOrders();
-                        this.renderKitchenOrders();
                     } else {
                         this.saveOrderHistory();
-                        this.renderOrderHistory();
                     }
                     
                     // Close modal
@@ -1418,6 +1644,17 @@
                 // CSV Export
                 document.getElementById('export-csv').addEventListener('click', () => {
                     this.downloadCSV();
+                });
+                
+                // Network status
+                window.addEventListener('online', () => {
+                    this.showSyncIndicator("Back online - syncing data...");
+                    setTimeout(() => this.hideSyncIndicator(), 2000);
+                });
+                
+                window.addEventListener('offline', () => {
+                    this.showSyncIndicator("You're offline - changes will sync when reconnected");
+                    setTimeout(() => this.hideSyncIndicator(), 3000);
                 });
             },
             
