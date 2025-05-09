@@ -36,9 +36,12 @@
         // IMPORTANT: Replace this with your actual reCAPTCHA site key from Google
         // Get it at: https://www.google.com/recaptcha/admin/create
         const appCheck = firebase.appCheck();
+      
         appCheck.activate(
-            'REPLACE_WITH_YOUR_RECAPTCHA_SITE_KEY', // ← Replace this!
-            true // Debug token for development
+          new firebase.appCheck.ReCaptchaV3Provider('6LcgkDMrAAAAAMUjTMO8rMK4tXiemU5pAYvNeK0'),
+          {
+            isTokenAutoRefreshEnabled: true // Optional: Keeps the token fresh
+          }
         );
         
         // Get Firestore instance
