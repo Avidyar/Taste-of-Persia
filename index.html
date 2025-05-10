@@ -526,6 +526,7 @@
                 // Check if already initialized to avoid duplicate app errors
                 if (!firebaseInitialized) {
                     firebase.initializeApp(firebaseConfig);
+                    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
                     
                     db = firebase.firestore();
                     firebaseInitialized = true;
@@ -1940,6 +1941,32 @@
         // Initialize the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             POS.init();
+            firebase.auth().onAuthStateChanged((user) => {
+    const statusEl = document.getElementById('connection-status');
+    const statusTextEl = document.getElementById('status-text');
+
+    if (user) {
+        // User is signed in
+        statusTextEl.textContent = '✅ Logged in as ' + user.email;
+        statusEl.classList.remove('status-offline');
+        statusEl.classList.add('status-online');
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('logout-section').classList.remove('hidden');
+        document.getElementById('app-section').classList.remove('hidden');
+        document.getElementById('user-email').textContent = user.email;
+    } else {
+        // User is signed out
+        statusTextEl.textContent = '❌ You have been logged out!';
+        statusEl.classList.remove('status-online');
+        statusEl.classList.add('status-offline');
+
+        // Show login again
+        document.getElementById('auth-section').classList.remove('hidden');
+        document.getElementById('logout-section').classList.add('hidden');
+        document.getElementById('app-section').classList.add('hidden');
+    }
+});
+
         });
 
         // Proper authentication handling - FIXED duplicate login
