@@ -115,7 +115,7 @@
         </button>
     </div>
 
-    <!-- Authentication Section - FIXED: Removed duplicate login forms -->
+    <!-- Authentication Section -->
     <div id="auth-section" class="max-w-sm mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg mt-10">
         <h2 class="text-xl font-semibold mb-4 text-center">Login</h2>
         <input type="email" id="email" placeholder="Email" class="w-full p-2 mb-3 border dark:border-gray-600 rounded-lg dark:bg-gray-700 text-base">
@@ -509,7 +509,7 @@
             }
         });
 
-        // Firebase configuration - FIXED proper initialization
+        // Firebase configuration
         const firebaseConfig = {
           apiKey: "AIzaSyAjEtQ_YZcltxOm_4Tbe-NgFOtVBw6u_zQ",
           authDomain: "persianecke.firebaseapp.com",
@@ -519,7 +519,7 @@
           appId: "1:241462886109:web:9865fcbfc61a95996d2534"
         };
 
-        // Initialize Firebase - Fixed syntax errors and offline detection
+        // Initialize Firebase with better error handling
         let db = null;
         let firebaseInitialized = false;
         
@@ -528,6 +528,7 @@
                 // Check if already initialized to avoid duplicate app errors
                 if (!firebaseInitialized) {
                     firebase.initializeApp(firebaseConfig);
+                    // Set persistence to LOCAL to maintain login across page refreshes
                     firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
                     
                     db = firebase.firestore();
@@ -544,7 +545,7 @@
             }
         }
         
-        // First attempt to initialize
+        // Initialize Firebase immediately
         initializeFirebase();
 
         // Data Models
@@ -565,7 +566,7 @@
             reconnectAttempts: 0,
             maxReconnectAttempts: 3,
             
-            // Fix the updateConnectionStatus function - FIXED nested duplication issue
+            // Update connection status function
             updateConnectionStatus(online, error) {
                 this.isOnline = online;
                 const statusEl = document.getElementById('connection-status');
@@ -596,7 +597,7 @@
             // Try to reconnect to Firebase
             attemptReconnect() {
                 if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-                    console.log("Max reconnect attempts reached. Working in offline mode.");
+                    console.log("Max reconnect attempts reached.");
                     return;
                 }
                 
@@ -610,54 +611,35 @@
                     this.updateConnectionStatus(true);
                     // Set up listeners again
                     this.setupFirebaseListeners();
-                    // Try to sync local data
-                    this.syncDataToFirebase();
                 } else {
                     this.updateConnectionStatus(false, new Error("Reconnection failed"));
-                }
-            },
-            
-            // Sync all local data to Firebase when connection is restored
-            syncDataToFirebase() {
-                if (!db || !this.isOnline) return;
-                
-                try {
-                    // Save menu items
-                    this.saveMenuItems();
-                    
-                    // Save kitchen orders
-                    this.saveKitchenOrders();
-                    
-                    // Save order history
-                    this.saveOrderHistory();
-                    
-                    // Save order counter
-                    this.saveOrderCounter();
-                    
-                    console.log("All data synced to Firebase");
-                } catch (error) {
-                    console.error("Error syncing data to Firebase:", error);
-                    this.updateConnectionStatus(false, error);
                 }
             },
             
             // Generate a unique order ID
             generateOrderId() {
                 this.orderCounter++;
-                localStorage.setItem('pos_orderCounter', this.orderCounter);
                 this.saveOrderCounter();
                 return 'PE-' + this.orderCounter;
+            },
+            
+            // Save order counter directly to Firestore
+            saveOrderCounter() {
+                if (db && this.isOnline) {
+                    db.collection('config').doc('orderCounter').set({
+                        counter: this.orderCounter,
+                        updatedAt: new Date().toISOString()
+                    }).catch(error => {
+                        console.error("Error saving order counter to Firebase:", error);
+                        this.updateConnectionStatus(false, error);
+                    });
+                }
             },
             
             // Initialize the app
             init() {
                 // Check network status
                 this.updateConnectionStatus(navigator.onLine);
-                
-                // Load initial data
-                this.loadOrderCounter();
-                this.loadKitchenOrders();
-                this.loadOrderHistory();
                 
                 // Setup event listeners
                 this.setupEventListeners();
@@ -686,6 +668,15 @@
                             this.renderMenuItems();
                             this.renderMenuConfigItems();
                             this.updateConnectionStatus(true);
+                        } else if (!doc.exists) {
+                            // Create empty menu items document if it doesn't exist
+                            db.collection('config').doc('menuItems').set({
+                                items: [],
+                                updatedAt: new Date().toISOString()
+                            });
+                            this.menuItems = [];
+                            this.renderMenuItems();
+                            this.renderMenuConfigItems();
                         }
                     }, error => {
                         console.error("Menu items listener error:", error);
@@ -698,7 +689,6 @@
                         snapshot.forEach(doc => {
                             this.kitchenOrders.push(doc.data());
                         });
-                        localStorage.setItem('pos_kitchenOrders', JSON.stringify(this.kitchenOrders));
                         this.renderKitchenOrders();
                         this.updateConnectionStatus(true);
                     }, error => {
@@ -712,7 +702,6 @@
                         snapshot.forEach(doc => {
                             this.orderHistory.push(doc.data());
                         });
-                        localStorage.setItem('pos_orderHistory', JSON.stringify(this.orderHistory));
                         this.renderOrderHistory();
                         this.updateSalesStats();
                         this.updateHistoryTotalSales();
@@ -726,7 +715,12 @@
                     const orderCounterUnsubscribe = db.collection('config').doc('orderCounter').onSnapshot(doc => {
                         if (doc.exists && doc.data().counter) {
                             this.orderCounter = doc.data().counter;
-                            localStorage.setItem('pos_orderCounter', this.orderCounter);
+                        } else if (!doc.exists) {
+                            // Create order counter document if it doesn't exist
+                            db.collection('config').doc('orderCounter').set({
+                                counter: this.orderCounter,
+                                updatedAt: new Date().toISOString()
+                            });
                         }
                     }, error => {
                         console.error("Order counter listener error:", error);
@@ -759,249 +753,53 @@
                 }
             },
             
-            // Save order counter to Firebase (if available) and localStorage with better error handling
-            saveOrderCounter() {
-                localStorage.setItem('pos_orderCounter', this.orderCounter);
+            // Menu item operations - directly with Firestore
+            addMenuItem(name, price, category) {
+                const id = Date.now().toString();
+                const newItem = { id, name, price: parseFloat(price), category };
                 
-                if (db && this.isOnline) {
-                    db.collection('config').doc('orderCounter').set({
-                        counter: this.orderCounter,
-                        updatedAt: new Date().toISOString()
-                    }).catch(error => {
-                        console.error("Error saving order counter to Firebase:", error);
-                        this.updateConnectionStatus(false, error);
-                    });
-                }
-            },
-            
-            // Load order counter from Firebase or localStorage with better error handling
-            loadOrderCounter() {
-                // First load from localStorage
-                const counter = localStorage.getItem('pos_orderCounter');
-                if (counter) {
-                    this.orderCounter = parseInt(counter);
-                }
-                
-                // If Firebase is available, try to fetch from there
-                if (db && this.isOnline) {
-                    db.collection('config').doc('orderCounter').get()
-                        .then(doc => {
-                            if (doc.exists && doc.data().counter) {
-                                this.orderCounter = doc.data().counter;
-                                localStorage.setItem('pos_orderCounter', this.orderCounter);
-                            } else if (counter) {
-                                // If no counter in Firebase but we have one locally, save it
-                                this.saveOrderCounter();
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error loading order counter from Firebase:", error);
-                            this.updateConnectionStatus(false, error);
-                        });
-                }
-            },
-            
-            // Load menu items from Firebase or localStorage with better error handling
-            loadMenuItems() {
-                // First load from localStorage for immediate display
-                const stored = localStorage.getItem('pos_menuItems');
-                if (stored) {
-                    try {
-                        this.menuItems = JSON.parse(stored);
-                        this.renderMenuItems();
-                        this.renderMenuConfigItems();
-                    } catch (e) {
-                        console.error("Error parsing stored menu items:", e);
-                        this.resetMenuItems();
-                    }
-                } else {
-                    this.resetMenuItems();
-                }
-                
-                // If online and db available, save to Firebase to sync with other devices
-                this.saveMenuItems();
-            },
-            
-            // Reset menu items to defaults
-            resetMenuItems() {
-                // Default menu items
-                this.renderMenuItems();
-                this.renderMenuConfigItems();
-            },
-            
-            // Load kitchen orders from localStorage with error handling
-            loadKitchenOrders() {
-                const stored = localStorage.getItem('pos_kitchenOrders');
-                if (stored) {
-                    try {
-                        this.kitchenOrders = JSON.parse(stored);
-                        this.renderKitchenOrders();
-                    } catch (e) {
-                        console.error("Error parsing stored kitchen orders:", e);
-                        this.kitchenOrders = [];
-                        this.renderKitchenOrders();
-                    }
-                } else {
-                    this.kitchenOrders = [];
-                    this.renderKitchenOrders();
-                }
-            },
-            
-            // Load order history from localStorage with error handling
-            loadOrderHistory() {
-                const stored = localStorage.getItem('pos_orderHistory');
-                if (stored) {
-                    try {
-                        this.orderHistory = JSON.parse(stored);
-                        this.renderOrderHistory();
-                        this.updateSalesStats();
-                        this.updateHistoryTotalSales();
-                    } catch (e) {
-                        console.error("Error parsing stored order history:", e);
-                        this.orderHistory = [];
-                        this.renderOrderHistory();
-                        this.updateSalesStats();
-                        this.updateHistoryTotalSales();
-                    }
-                } else {
-                    this.orderHistory = [];
-                    this.renderOrderHistory();
-                    this.updateSalesStats();
-                    this.updateHistoryTotalSales();
-                }
-            },
-            
-            // Save menu items to Firebase and localStorage with better error handling
-            saveMenuItems() {
-                localStorage.setItem('pos_menuItems', JSON.stringify(this.menuItems));
+                this.menuItems.push(newItem);
                 
                 if (db && this.isOnline) {
                     db.collection('config').doc('menuItems').set({
                         items: this.menuItems,
                         updatedAt: new Date().toISOString()
-                    }).then(() => {
-                        console.log("Menu items saved to Firebase");
                     }).catch(error => {
-                        console.error("Error saving menu items to Firebase:", error);
+                        console.error("Error adding menu item to Firebase:", error);
                         this.updateConnectionStatus(false, error);
                     });
                 }
-            },
-            
-            // Save kitchen orders to Firebase and localStorage with better error handling
-            saveKitchenOrders() {
-                localStorage.setItem('pos_kitchenOrders', JSON.stringify(this.kitchenOrders));
-                
-                if (db && this.isOnline) {
-                    try {
-                        // Use a more robust approach for batch operations
-                        const syncKitchenOrders = async () => {
-                            // Create a new batch
-                            const batch = db.batch();
-                            
-                            // Get existing docs
-                            const snapshot = await db.collection('kitchenOrders').get();
-                            
-                            // Delete all existing docs in batch
-                            snapshot.forEach(doc => {
-                                batch.delete(doc.ref);
-                            });
-                            
-                            // Add all current kitchen orders in batch
-                            this.kitchenOrders.forEach(order => {
-                                const docRef = db.collection('kitchenOrders').doc(order.id);
-                                batch.set(docRef, {
-                                    ...order,
-                                    updatedAt: new Date().toISOString()
-                                });
-                            });
-                            
-                            // Commit the batch
-                            await batch.commit();
-                            console.log("Kitchen orders synced to Firebase");
-                        };
-                        
-                        // Run the sync operation
-                        syncKitchenOrders().catch(error => {
-                            console.error("Error syncing kitchen orders to Firebase:", error);
-                            this.updateConnectionStatus(false, error);
-                        });
-                    } catch (error) {
-                        console.error("Error in kitchen orders sync operation:", error);
-                        this.updateConnectionStatus(false, error);
-                    }
-                }
-                
-                this.exportDataToCSV();
-            },
-            
-            // Save order history to Firebase and localStorage with better error handling
-            saveOrderHistory() {
-                localStorage.setItem('pos_orderHistory', JSON.stringify(this.orderHistory));
-                
-                if (db && this.isOnline) {
-                    try {
-                        // Use a more robust approach for batch operations
-                        const syncOrderHistory = async () => {
-                            // Create a new batch
-                            const batch = db.batch();
-                            
-                            // Get existing docs
-                            const snapshot = await db.collection('orderHistory').get();
-                            
-                            // Delete all existing docs in batch
-                            snapshot.forEach(doc => {
-                                batch.delete(doc.ref);
-                            });
-                            
-                            // Add all current history in batch
-                            this.orderHistory.forEach(order => {
-                                const docRef = db.collection('orderHistory').doc(order.id);
-                                batch.set(docRef, {
-                                    ...order,
-                                    updatedAt: new Date().toISOString()
-                                });
-                            });
-                            
-                            // Commit the batch
-                            await batch.commit();
-                            console.log("Order history synced to Firebase");
-                        };
-                        
-                        // Run the sync operation
-                        syncOrderHistory().catch(error => {
-                            console.error("Error syncing order history to Firebase:", error);
-                            this.updateConnectionStatus(false, error);
-                        });
-                    } catch (error) {
-                        console.error("Error in order history sync operation:", error);
-                        this.updateConnectionStatus(false, error);
-                    }
-                }
-                
-                this.exportDataToCSV();
-                this.updateSalesStats();
-                this.updateHistoryTotalSales();
-            },
-            
-            // Menu item operations
-            addMenuItem(name, price, category) {
-                const id = Date.now().toString();
-                this.menuItems.push({ id, name, price: parseFloat(price), category });
-                this.saveMenuItems();
             },
             
             updateMenuItem(id, name, price, category) {
                 const index = this.menuItems.findIndex(item => item.id === id);
                 if (index !== -1) {
                     this.menuItems[index] = { id, name, price: parseFloat(price), category };
-                    this.saveMenuItems();
+                    
+                    if (db && this.isOnline) {
+                        db.collection('config').doc('menuItems').set({
+                            items: this.menuItems,
+                            updatedAt: new Date().toISOString()
+                        }).catch(error => {
+                            console.error("Error updating menu item in Firebase:", error);
+                            this.updateConnectionStatus(false, error);
+                        });
+                    }
                 }
             },
             
             deleteMenuItem(id) {
                 this.menuItems = this.menuItems.filter(item => item.id !== id);
-                this.saveMenuItems();
+                
+                if (db && this.isOnline) {
+                    db.collection('config').doc('menuItems').set({
+                        items: this.menuItems,
+                        updatedAt: new Date().toISOString()
+                    }).catch(error => {
+                        console.error("Error deleting menu item from Firebase:", error);
+                        this.updateConnectionStatus(false, error);
+                    });
+                }
             },
             
             // Order operations
@@ -1143,7 +941,15 @@
                 };
                 
                 this.kitchenOrders.push(newOrder);
-                this.saveKitchenOrders();
+                
+                // Save to Firestore
+                if (db && this.isOnline) {
+                    db.collection('kitchenOrders').doc(newOrder.id).set(newOrder)
+                        .catch(error => {
+                            console.error("Error adding order to kitchenOrders:", error);
+                            this.updateConnectionStatus(false, error);
+                        });
+                }
                 
                 this.clearOrder();
             },
@@ -1156,11 +962,39 @@
                         completedAt: new Date().getTime()
                     };
                     
-                    this.orderHistory.unshift(completedOrder);
-                    this.kitchenOrders.splice(index, 1);
-                    
-                    this.saveKitchenOrders();
-                    this.saveOrderHistory();
+                    // Update Firebase in a transaction
+                    if (db && this.isOnline) {
+                        db.runTransaction(transaction => {
+                            // Delete from kitchen orders
+                            const kitchenOrderRef = db.collection('kitchenOrders').doc(id);
+                            transaction.delete(kitchenOrderRef);
+                            
+                            // Add to order history
+                            const historyOrderRef = db.collection('orderHistory').doc(id);
+                            transaction.set(historyOrderRef, completedOrder);
+                            
+                            return Promise.resolve();
+                        }).then(() => {
+                            // Update local arrays after successful transaction
+                            this.orderHistory.unshift(completedOrder);
+                            this.kitchenOrders.splice(index, 1);
+                            this.renderKitchenOrders();
+                            this.renderOrderHistory();
+                            this.updateSalesStats();
+                            this.updateHistoryTotalSales();
+                        }).catch(error => {
+                            console.error("Transaction failed:", error);
+                            this.updateConnectionStatus(false, error);
+                        });
+                    } else {
+                        // Offline mode or no db, just update local arrays
+                        this.orderHistory.unshift(completedOrder);
+                        this.kitchenOrders.splice(index, 1);
+                        this.renderKitchenOrders();
+                        this.renderOrderHistory();
+                        this.updateSalesStats();
+                        this.updateHistoryTotalSales();
+                    }
                 }
             },
             
@@ -1325,15 +1159,27 @@
                         orders[orderIndex].total = orders[orderIndex].subtotal - orders[orderIndex].discount;
                     }
                     
-                    // Save changes
-                    if (orderType === 'kitchen') {
-                        this.saveKitchenOrders();
-                    } else {
-                        this.saveOrderHistory();
+                    // Save changes to Firestore
+                    if (db && this.isOnline) {
+                        const collection = orderType === 'kitchen' ? 'kitchenOrders' : 'orderHistory';
+                        db.collection(collection).doc(orderId).set(orders[orderIndex])
+                            .catch(error => {
+                                console.error(`Error updating ${orderType} order:`, error);
+                                this.updateConnectionStatus(false, error);
+                            });
                     }
                     
                     // Close modal
                     document.getElementById('edit-order-modal').classList.add('hidden');
+                    
+                    // Update UI if needed
+                    if (orderType === 'kitchen') {
+                        this.renderKitchenOrders();
+                    } else {
+                        this.renderOrderHistory();
+                        this.updateSalesStats();
+                        this.updateHistoryTotalSales();
+                    }
                 }
             },
             
@@ -1419,7 +1265,7 @@
             },
             
             // CSV Export
-            exportDataToCSV() {
+            downloadCSV() {
                 // Create CSV content for kitchen orders
                 let kitchenOrdersCSV = 'Order ID,Date,Time,Items,Subtotal,Discount,Total\n';
                 
@@ -1450,19 +1296,10 @@
                     historyCSV += `${order.id},${dateFormatted},${timeFormatted},"${itemsList}",${order.subtotal.toFixed(2)},${order.discount.toFixed(2)},${order.total.toFixed(2)}\n`;
                 });
                 
-                // Store in localStorage
-                localStorage.setItem('pos_kitchen_orders_csv', kitchenOrdersCSV);
-                localStorage.setItem('pos_order_history_csv', historyCSV);
-            },
-            
-            downloadCSV() {
                 // Combine both CSV data
-                const kitchenCSV = localStorage.getItem('pos_kitchen_orders_csv') || '';
-                const historyCSV = localStorage.getItem('pos_order_history_csv') || '';
-                
                 const combinedCSV = 
                     "KITCHEN ORDERS\n" + 
-                    kitchenCSV + 
+                    kitchenOrdersCSV + 
                     "\n\nORDER HISTORY\n" + 
                     historyCSV;
                 
@@ -1930,71 +1767,77 @@
         // Initialize the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             POS.init();
+            
+            // Listen for authentication state changes
             firebase.auth().onAuthStateChanged((user) => {
-    const statusEl = document.getElementById('connection-status');
-    const statusTextEl = document.getElementById('status-text');
+                const statusEl = document.getElementById('connection-status');
+                const statusTextEl = document.getElementById('status-text');
 
-    if (user) {
-        // User is signed in
-        statusTextEl.textContent = '✅ Logged in as ' + user.email;
-        statusEl.classList.remove('status-offline');
-        statusEl.classList.add('status-online');
-        document.getElementById('auth-section').classList.add('hidden');
-        document.getElementById('logout-section').classList.remove('hidden');
-        document.getElementById('app-section').classList.remove('hidden');
-        document.getElementById('user-email').textContent = user.email;
-    } else {
-        // User is signed out
-        statusTextEl.textContent = '❌ You have been logged out!';
-        statusEl.classList.remove('status-online');
-        statusEl.classList.add('status-offline');
+                if (user) {
+                    // User is signed in
+                    statusTextEl.textContent = '✅ Logged in as ' + user.email;
+                    statusEl.classList.remove('status-offline');
+                    statusEl.classList.add('status-online');
+                    document.getElementById('auth-section').classList.add('hidden');
+                    document.getElementById('logout-section').classList.remove('hidden');
+                    document.getElementById('app-section').classList.remove('hidden');
+                    document.getElementById('user-email').textContent = user.email;
+                    
+                    // Ensure Firebase is initialized and listeners are setup
+                    if (!firebaseInitialized) {
+                        initializeFirebase();
+                    }
+                    POS.setupFirebaseListeners();
+                } else {
+                    // User is signed out
+                    statusTextEl.textContent = '❌ Not logged in';
+                    statusEl.classList.remove('status-online');
+                    statusEl.classList.add('status-offline');
 
-        // Show login again
-        document.getElementById('auth-section').classList.remove('hidden');
-        document.getElementById('logout-section').classList.add('hidden');
-        document.getElementById('app-section').classList.add('hidden');
-    }
-});
-
+                    // Show login again
+                    document.getElementById('auth-section').classList.remove('hidden');
+                    document.getElementById('logout-section').classList.add('hidden');
+                    document.getElementById('app-section').classList.add('hidden');
+                }
+            });
         });
 
-        // Proper authentication handling - FIXED duplicate login
+        // Authentication handling
         function login() {
-        const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
 
-    // 👇 Show spinner and disable button
-    document.getElementById('login-button').disabled = true;
-    document.getElementById('login-spinner').classList.remove('hidden');
-    document.getElementById('login-button-text').textContent = 'Logging in...';
+            // Show spinner and disable button
+            document.getElementById('login-button').disabled = true;
+            document.getElementById('login-spinner').classList.remove('hidden');
+            document.getElementById('login-button-text').textContent = 'Logging in...';
 
-    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-        .then(() => {
-            return firebase.auth().signInWithEmailAndPassword(email, password);
-        })
-        .then((userCredential) => {
-            const user = userCredential.user;
-            document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('logout-section').classList.remove('hidden');
-            document.getElementById('app-section').classList.remove('hidden');
-            document.getElementById('user-email').textContent = user.email;
-            POS.updateConnectionStatus(true);
-        })
-        .catch((error) => {
-            const statusEl = document.getElementById('connection-status');
-            const statusTextEl = document.getElementById('status-text');
-            statusTextEl.textContent = 'Login failed: ' + error.message;
-            statusEl.classList.remove('status-online');
-            statusEl.classList.add('status-offline');
-        })
-        .finally(() => {
-            // 👇 Hide spinner and re-enable button
-            document.getElementById('login-button').disabled = false;
-            document.getElementById('login-spinner').classList.add('hidden');
-            document.getElementById('login-button-text').textContent = 'Login';
-            });
-    }
-
+            firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                .then(() => {
+                    return firebase.auth().signInWithEmailAndPassword(email, password);
+                })
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    document.getElementById('auth-section').classList.add('hidden');
+                    document.getElementById('logout-section').classList.remove('hidden');
+                    document.getElementById('app-section').classList.remove('hidden');
+                    document.getElementById('user-email').textContent = user.email;
+                    POS.updateConnectionStatus(true);
+                })
+                .catch((error) => {
+                    const statusEl = document.getElementById('connection-status');
+                    const statusTextEl = document.getElementById('status-text');
+                    statusTextEl.textContent = 'Login failed: ' + error.message;
+                    statusEl.classList.remove('status-online');
+                    statusEl.classList.add('status-offline');
+                })
+                .finally(() => {
+                    // Hide spinner and re-enable button
+                    document.getElementById('login-button').disabled = false;
+                    document.getElementById('login-spinner').classList.add('hidden');
+                    document.getElementById('login-button-text').textContent = 'Login';
+                });
+        }
 
         function logout() {
             firebase.auth().signOut()
@@ -2010,37 +1853,6 @@
                     console.error("🚨 Logout error:", error);
                 });
         }
-
-        // Set up authentication state change listener
-        firebase.auth().onAuthStateChanged(user => {
-            const appSection = document.getElementById('app-section');
-            const authSection = document.getElementById('auth-section');
-            const logoutSection = document.getElementById('logout-section');
-            
-            if (user) {
-                console.log("✅ User is logged in:", user.email);
-                authSection.style.display = 'none';
-                logoutSection.style.display = 'block';
-                document.getElementById('user-email').textContent = user.email;
-                appSection.classList.remove('hidden');
-                
-                // Update connection status with user info
-                POS.updateConnectionStatus(POS.isOnline);
-                
-                // Initialize Firebase if needed
-                if (!firebaseInitialized) {
-                    initializeFirebase();
-                }
-            } else {
-                console.log("🚫 User is NOT logged in");
-                authSection.style.display = 'block';
-                logoutSection.style.display = 'none';
-                appSection.classList.add('hidden');
-                
-                // Update connection status without user info
-                POS.updateConnectionStatus(POS.isOnline);
-            }
-        });
     </script>
 </body>
 </html>
