@@ -32,15 +32,6 @@
                 // Check if already initialized to avoid duplicate app errors
                 if (!firebaseInitialized) {
                     firebase.initializeApp(firebaseConfig);
-                    
-                    // Configure for offline persistence
-                    firebase.firestore().enablePersistence({synchronizeTabs: true})
-                        .catch(err => {
-                            if (err.code === 'failed-precondition') {
-                                console.warn("Multiple tabs open, persistence can only be enabled in one tab at a time");
-                            } else if (err.code === 'unimplemented') {
-                                console.warn("The current browser does not support offline persistence");
-                            }
                         });
                     
                     db = firebase.firestore();
@@ -61,6 +52,15 @@
         initializeFirebase();
 
             const auth = firebase.auth();
+        
+        // Set persistent login (this fixes random logouts)
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => {
+                console.log("Auth persistence set to LOCAL");
+            })
+            .catch(error => {
+                console.error("Error setting auth persistence:", error);
+            });
         
         // Show/hide sections based on login status
         auth.onAuthStateChanged(user => {
