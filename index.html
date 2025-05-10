@@ -656,7 +656,6 @@
                 
                 // Load initial data
                 this.loadOrderCounter();
-                this.loadMenuItems();
                 this.loadKitchenOrders();
                 this.loadOrderHistory();
                 
@@ -684,7 +683,6 @@
                     const menuItemsUnsubscribe = db.collection('config').doc('menuItems').onSnapshot(doc => {
                         if (doc.exists && doc.data().items) {
                             this.menuItems = doc.data().items;
-                            localStorage.setItem('pos_menuItems', JSON.stringify(this.menuItems));
                             this.renderMenuItems();
                             this.renderMenuConfigItems();
                             this.updateConnectionStatus(true);
@@ -827,17 +825,6 @@
             // Reset menu items to defaults
             resetMenuItems() {
                 // Default menu items
-                this.menuItems = [
-                    { id: '1', name: 'Cheeseburger', price: 8.99, category: 'food' },
-                    { id: '2', name: 'Pizza', price: 12.99, category: 'food' },
-                    { id: '3', name: 'Salad', price: 6.99, category: 'food' },
-                    { id: '4', name: 'Fries', price: 3.99, category: 'food' },
-                    { id: '5', name: 'Soda', price: 1.99, category: 'beverage' },
-                    { id: '6', name: 'Coffee', price: 2.99, category: 'beverage' },
-                    { id: '7', name: 'Ice Cream', price: 4.99, category: 'dessert' },
-                    { id: '8', name: 'Cake', price: 5.99, category: 'dessert' }
-                ];
-                localStorage.setItem('pos_menuItems', JSON.stringify(this.menuItems));
                 this.renderMenuItems();
                 this.renderMenuConfigItems();
             },
