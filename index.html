@@ -9,28 +9,54 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     
-    <!-- Simple Firebase Config -->
+    <!-- Improved Firebase Config -->
     <script>
-        // Firebase configuration - your actual config
+        // Firebase configuration - corrected storage bucket format
         const firebaseConfig = {
             apiKey: "AIzaSyBrorolxR3dmiY8jeXhsrIWR_x64aSV_sY",
             authDomain: "poshohenheim.firebaseapp.com",
             projectId: "poshohenheim",
-            storageBucket: "poshohenheim.firebasestorage.app",
+            storageBucket: "poshohenheim.appspot.com", // Fixed storage bucket format
             messagingSenderId: "755978169009",
             appId: "1:755978169009:web:2bef63525b29980b391090"
         };
 
-        // Initialize Firebase - simplified approach with error handling
+        // Initialize Firebase - with improved error handling and offline detection
         let db = null;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-            console.log("Firebase initialized successfully");
-        } catch (error) {
-            console.error("Firebase initialization error:", error);
-            alert("Could not connect to the database. The app will work in offline mode only.");
+        let firebaseInitialized = false;
+        
+        function initializeFirebase() {
+            try {
+                // Check if already initialized to avoid duplicate app errors
+                if (!firebaseInitialized) {
+                    firebase.initializeApp(firebaseConfig);
+                    
+                    // Configure for offline persistence
+                    firebase.firestore().enablePersistence({synchronizeTabs: true})
+                        .catch(err => {
+                            if (err.code === 'failed-precondition') {
+                                console.warn("Multiple tabs open, persistence can only be enabled in one tab at a time");
+                            } else if (err.code === 'unimplemented') {
+                                console.warn("The current browser does not support offline persistence");
+                            }
+                        });
+                    
+                    db = firebase.firestore();
+                    firebaseInitialized = true;
+                    console.log("Firebase initialized successfully");
+                    return true;
+                } else {
+                    db = firebase.firestore();
+                    return true;
+                }
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+                return false;
+            }
         }
+        
+        // First attempt to initialize
+        initializeFirebase();
     </script>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -111,12 +137,32 @@
             background-color: #ef4444;
             color: white;
         }
+        
+        /* Loading indicator */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen transition-colors duration-200">
     
     <!-- Connection Status Indicator -->
-    <div id="connection-status" class="status-offline">Offline Mode</div>
+    <div id="connection-status" class="status-offline">
+        <span id="status-text">Offline Mode</span>
+        <button id="retry-connection" class="ml-2 bg-white bg-opacity-20 px-2 py-1 rounded text-sm">
+            Retry
+        </button>
+    </div>
     
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
@@ -508,19 +554,77 @@
             orderHistory: [],
             orderCounter: 1000, // Starting order number
             isOnline: false,
+            reconnectAttempts: 0,
+            maxReconnectAttempts: 3,
             
-            // Update connection status indicator
-            updateConnectionStatus(online) {
+            // Update connection status indicator with reconnect attempts tracking
+            updateConnectionStatus(online, error) {
                 this.isOnline = online;
                 const statusEl = document.getElementById('connection-status');
+                const statusTextEl = document.getElementById('status-text');
+                
                 if (online) {
-                    statusEl.textContent = 'Online - Connected';
+                    statusTextEl.textContent = 'Online - Connected';
+                    this.reconnectAttempts = 0; // Reset reconnect attempts when connected
                     statusEl.classList.remove('status-offline');
                     statusEl.classList.add('status-online');
                 } else {
-                    statusEl.textContent = 'Offline Mode';
+                    // Show error message if provided
+                    if (error) {
+                        statusTextEl.textContent = `Offline: ${error.message || 'Connection failed'}`;
+                    } else {
+                        statusTextEl.textContent = 'Offline Mode';
+                    }
                     statusEl.classList.remove('status-online');
                     statusEl.classList.add('status-offline');
+                }
+            },
+            
+            // Try to reconnect to Firebase
+            attemptReconnect() {
+                if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+                    console.log("Max reconnect attempts reached. Working in offline mode.");
+                    return;
+                }
+                
+                this.reconnectAttempts++;
+                
+                const statusTextEl = document.getElementById('status-text');
+                statusTextEl.textContent = `Trying to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`;
+                
+                // Try to initialize Firebase again
+                if (initializeFirebase()) {
+                    this.updateConnectionStatus(true);
+                    // Set up listeners again
+                    this.setupFirebaseListeners();
+                    // Try to sync local data
+                    this.syncDataToFirebase();
+                } else {
+                    this.updateConnectionStatus(false, new Error("Reconnection failed"));
+                }
+            },
+            
+            // Sync all local data to Firebase when connection is restored
+            syncDataToFirebase() {
+                if (!db || !this.isOnline) return;
+                
+                try {
+                    // Save menu items
+                    this.saveMenuItems();
+                    
+                    // Save kitchen orders
+                    this.saveKitchenOrders();
+                    
+                    // Save order history
+                    this.saveOrderHistory();
+                    
+                    // Save order counter
+                    this.saveOrderCounter();
+                    
+                    console.log("All data synced to Firebase");
+                } catch (error) {
+                    console.error("Error syncing data to Firebase:", error);
+                    this.updateConnectionStatus(false, error);
                 }
             },
             
@@ -546,44 +650,53 @@
                 // Setup event listeners
                 this.setupEventListeners();
                 
+                // Setup Firebase retry button
+                document.getElementById('retry-connection').addEventListener('click', () => {
+                    this.attemptReconnect();
+                });
+                
                 // Setup Firebase listeners if we have Firebase initialized
                 if (db) {
                     this.setupFirebaseListeners();
-                    this.updateConnectionStatus(true);
                 }
             },
             
-            // Setup Firebase real-time listeners
+            // Setup Firebase real-time listeners with improved error handling
             setupFirebaseListeners() {
-                // Listen for menu items changes
+                // Only setup listeners if Firebase is available
+                if (!db) return;
+                
                 try {
-                    db.collection('config').doc('menuItems').onSnapshot(doc => {
+                    // Listen for menu items changes with error handling
+                    const menuItemsUnsubscribe = db.collection('config').doc('menuItems').onSnapshot(doc => {
                         if (doc.exists && doc.data().items) {
                             this.menuItems = doc.data().items;
                             localStorage.setItem('pos_menuItems', JSON.stringify(this.menuItems));
                             this.renderMenuItems();
                             this.renderMenuConfigItems();
+                            this.updateConnectionStatus(true);
                         }
                     }, error => {
                         console.error("Menu items listener error:", error);
-                        this.updateConnectionStatus(false);
+                        this.updateConnectionStatus(false, error);
                     });
                     
-                    // Listen for kitchen orders changes
-                    db.collection('kitchenOrders').onSnapshot(snapshot => {
+                    // Listen for kitchen orders changes with error handling
+                    const kitchenOrdersUnsubscribe = db.collection('kitchenOrders').onSnapshot(snapshot => {
                         this.kitchenOrders = [];
                         snapshot.forEach(doc => {
                             this.kitchenOrders.push(doc.data());
                         });
                         localStorage.setItem('pos_kitchenOrders', JSON.stringify(this.kitchenOrders));
                         this.renderKitchenOrders();
+                        this.updateConnectionStatus(true);
                     }, error => {
                         console.error("Kitchen orders listener error:", error);
-                        this.updateConnectionStatus(false);
+                        this.updateConnectionStatus(false, error);
                     });
                     
-                    // Listen for order history changes
-                    db.collection('orderHistory').onSnapshot(snapshot => {
+                    // Listen for order history changes with error handling
+                    const orderHistoryUnsubscribe = db.collection('orderHistory').onSnapshot(snapshot => {
                         this.orderHistory = [];
                         snapshot.forEach(doc => {
                             this.orderHistory.push(doc.data());
@@ -592,41 +705,65 @@
                         this.renderOrderHistory();
                         this.updateSalesStats();
                         this.updateHistoryTotalSales();
+                        this.updateConnectionStatus(true);
                     }, error => {
                         console.error("Order history listener error:", error);
-                        this.updateConnectionStatus(false);
+                        this.updateConnectionStatus(false, error);
                     });
                     
-                    // Listen for order counter changes
-                    db.collection('config').doc('orderCounter').onSnapshot(doc => {
+                    // Listen for order counter changes with error handling
+                    const orderCounterUnsubscribe = db.collection('config').doc('orderCounter').onSnapshot(doc => {
                         if (doc.exists && doc.data().counter) {
                             this.orderCounter = doc.data().counter;
                             localStorage.setItem('pos_orderCounter', this.orderCounter);
                         }
                     }, error => {
                         console.error("Order counter listener error:", error);
+                        this.updateConnectionStatus(false, error);
                     });
+                    
+                    // Store unsubscribe functions for cleanup if needed
+                    this.firebaseUnsubscribes = {
+                        menuItems: menuItemsUnsubscribe,
+                        kitchenOrders: kitchenOrdersUnsubscribe,
+                        orderHistory: orderHistoryUnsubscribe,
+                        orderCounter: orderCounterUnsubscribe
+                    };
+                    
+                    this.updateConnectionStatus(true);
                 } catch (error) {
                     console.error("Error setting up Firebase listeners:", error);
-                    this.updateConnectionStatus(false);
+                    this.updateConnectionStatus(false, error);
                 }
             },
             
-            // Save order counter to Firebase (if available) and localStorage
+            // Clean up Firebase listeners
+            cleanupFirebaseListeners() {
+                if (this.firebaseUnsubscribes) {
+                    Object.values(this.firebaseUnsubscribes).forEach(unsubscribe => {
+                        if (typeof unsubscribe === 'function') {
+                            unsubscribe();
+                        }
+                    });
+                }
+            },
+            
+            // Save order counter to Firebase (if available) and localStorage with better error handling
             saveOrderCounter() {
                 localStorage.setItem('pos_orderCounter', this.orderCounter);
                 
                 if (db && this.isOnline) {
                     db.collection('config').doc('orderCounter').set({
-                        counter: this.orderCounter
+                        counter: this.orderCounter,
+                        updatedAt: new Date().toISOString()
                     }).catch(error => {
                         console.error("Error saving order counter to Firebase:", error);
-                        this.updateConnectionStatus(false);
+                        this.updateConnectionStatus(false, error);
                     });
                 }
             },
             
-            // Load order counter from Firebase or localStorage
+            // Load order counter from Firebase or localStorage with better error handling
             loadOrderCounter() {
                 // First load from localStorage
                 const counter = localStorage.getItem('pos_orderCounter');
@@ -648,141 +785,198 @@
                         })
                         .catch(error => {
                             console.error("Error loading order counter from Firebase:", error);
-                            this.updateConnectionStatus(false);
+                            this.updateConnectionStatus(false, error);
                         });
                 }
             },
             
-            // Load menu items from Firebase or localStorage
+            // Load menu items from Firebase or localStorage with better error handling
             loadMenuItems() {
                 // First load from localStorage for immediate display
                 const stored = localStorage.getItem('pos_menuItems');
                 if (stored) {
-                    this.menuItems = JSON.parse(stored);
-                    this.renderMenuItems();
-                    this.renderMenuConfigItems();
+                    try {
+                        this.menuItems = JSON.parse(stored);
+                        this.renderMenuItems();
+                        this.renderMenuConfigItems();
+                    } catch (e) {
+                        console.error("Error parsing stored menu items:", e);
+                        this.resetMenuItems();
+                    }
                 } else {
-                    // Default menu items
-                    this.menuItems = [
-                        { id: '1', name: 'Cheeseburger', price: 8.99, category: 'food' },
-                        { id: '2', name: 'Pizza', price: 12.99, category: 'food' },
-                        { id: '3', name: 'Salad', price: 6.99, category: 'food' },
-                        { id: '4', name: 'Fries', price: 3.99, category: 'food' },
-                        { id: '5', name: 'Soda', price: 1.99, category: 'beverage' },
-                        { id: '6', name: 'Coffee', price: 2.99, category: 'beverage' },
-                        { id: '7', name: 'Ice Cream', price: 4.99, category: 'dessert' },
-                        { id: '8', name: 'Cake', price: 5.99, category: 'dessert' }
-                    ];
-                    localStorage.setItem('pos_menuItems', JSON.stringify(this.menuItems));
-                    this.renderMenuItems();
-                    this.renderMenuConfigItems();
+                    this.resetMenuItems();
                 }
                 
                 // If online and db available, save to Firebase to sync with other devices
                 this.saveMenuItems();
             },
             
-            // Load kitchen orders from localStorage
+            // Reset menu items to defaults
+            resetMenuItems() {
+                // Default menu items
+                this.menuItems = [
+                    { id: '1', name: 'Cheeseburger', price: 8.99, category: 'food' },
+                    { id: '2', name: 'Pizza', price: 12.99, category: 'food' },
+                    { id: '3', name: 'Salad', price: 6.99, category: 'food' },
+                    { id: '4', name: 'Fries', price: 3.99, category: 'food' },
+                    { id: '5', name: 'Soda', price: 1.99, category: 'beverage' },
+                    { id: '6', name: 'Coffee', price: 2.99, category: 'beverage' },
+                    { id: '7', name: 'Ice Cream', price: 4.99, category: 'dessert' },
+                    { id: '8', name: 'Cake', price: 5.99, category: 'dessert' }
+                ];
+                localStorage.setItem('pos_menuItems', JSON.stringify(this.menuItems));
+                this.renderMenuItems();
+                this.renderMenuConfigItems();
+            },
+            
+            // Load kitchen orders from localStorage with error handling
             loadKitchenOrders() {
                 const stored = localStorage.getItem('pos_kitchenOrders');
                 if (stored) {
-                    this.kitchenOrders = JSON.parse(stored);
+                    try {
+                        this.kitchenOrders = JSON.parse(stored);
+                        this.renderKitchenOrders();
+                    } catch (e) {
+                        console.error("Error parsing stored kitchen orders:", e);
+                        this.kitchenOrders = [];
+                        this.renderKitchenOrders();
+                    }
+                } else {
+                    this.kitchenOrders = [];
                     this.renderKitchenOrders();
                 }
             },
             
-            // Load order history from localStorage
+            // Load order history from localStorage with error handling
             loadOrderHistory() {
                 const stored = localStorage.getItem('pos_orderHistory');
                 if (stored) {
-                    this.orderHistory = JSON.parse(stored);
+                    try {
+                        this.orderHistory = JSON.parse(stored);
+                        this.renderOrderHistory();
+                        this.updateSalesStats();
+                        this.updateHistoryTotalSales();
+                    } catch (e) {
+                        console.error("Error parsing stored order history:", e);
+                        this.orderHistory = [];
+                        this.renderOrderHistory();
+                        this.updateSalesStats();
+                        this.updateHistoryTotalSales();
+                    }
+                } else {
+                    this.orderHistory = [];
                     this.renderOrderHistory();
                     this.updateSalesStats();
                     this.updateHistoryTotalSales();
                 }
             },
             
-            // Save menu items to Firebase and localStorage
+            // Save menu items to Firebase and localStorage with better error handling
             saveMenuItems() {
                 localStorage.setItem('pos_menuItems', JSON.stringify(this.menuItems));
                 
                 if (db && this.isOnline) {
                     db.collection('config').doc('menuItems').set({
-                        items: this.menuItems
+                        items: this.menuItems,
+                        updatedAt: new Date().toISOString()
+                    }).then(() => {
+                        console.log("Menu items saved to Firebase");
                     }).catch(error => {
                         console.error("Error saving menu items to Firebase:", error);
-                        this.updateConnectionStatus(false);
+                        this.updateConnectionStatus(false, error);
                     });
                 }
             },
             
-            // Save kitchen orders to Firebase and localStorage
+            // Save kitchen orders to Firebase and localStorage with better error handling
             saveKitchenOrders() {
                 localStorage.setItem('pos_kitchenOrders', JSON.stringify(this.kitchenOrders));
                 
                 if (db && this.isOnline) {
-                    // Delete existing kitchen orders
-                    const batch = db.batch();
-                    
-                    // Add new orders in a batch
-                    db.collection('kitchenOrders').get()
-                        .then(snapshot => {
-                            // Delete existing docs
+                    try {
+                        // Use a more robust approach for batch operations
+                        const syncKitchenOrders = async () => {
+                            // Create a new batch
+                            const batch = db.batch();
+                            
+                            // Get existing docs
+                            const snapshot = await db.collection('kitchenOrders').get();
+                            
+                            // Delete all existing docs in batch
                             snapshot.forEach(doc => {
                                 batch.delete(doc.ref);
                             });
                             
-                            // Create new docs
+                            // Add all current kitchen orders in batch
                             this.kitchenOrders.forEach(order => {
                                 const docRef = db.collection('kitchenOrders').doc(order.id);
-                                batch.set(docRef, order);
+                                batch.set(docRef, {
+                                    ...order,
+                                    updatedAt: new Date().toISOString()
+                                });
                             });
                             
                             // Commit the batch
-                            return batch.commit();
-                        })
-                        .then(() => {
+                            await batch.commit();
                             console.log("Kitchen orders synced to Firebase");
-                        })
-                        .catch(error => {
-                            console.error("Error saving kitchen orders to Firebase:", error);
-                            this.updateConnectionStatus(false);
+                        };
+                        
+                        // Run the sync operation
+                        syncKitchenOrders().catch(error => {
+                            console.error("Error syncing kitchen orders to Firebase:", error);
+                            this.updateConnectionStatus(false, error);
                         });
+                    } catch (error) {
+                        console.error("Error in kitchen orders sync operation:", error);
+                        this.updateConnectionStatus(false, error);
+                    }
                 }
+                
                 this.exportDataToCSV();
             },
             
-            // Save order history to Firebase and localStorage
+            // Save order history to Firebase and localStorage with better error handling
             saveOrderHistory() {
                 localStorage.setItem('pos_orderHistory', JSON.stringify(this.orderHistory));
                 
                 if (db && this.isOnline) {
-                    // Delete existing history
-                    const batch = db.batch();
-                    
-                    db.collection('orderHistory').get()
-                        .then(snapshot => {
-                            // Delete existing docs
+                    try {
+                        // Use a more robust approach for batch operations
+                        const syncOrderHistory = async () => {
+                            // Create a new batch
+                            const batch = db.batch();
+                            
+                            // Get existing docs
+                            const snapshot = await db.collection('orderHistory').get();
+                            
+                            // Delete all existing docs in batch
                             snapshot.forEach(doc => {
                                 batch.delete(doc.ref);
                             });
                             
-                            // Create new docs
+                            // Add all current history in batch
                             this.orderHistory.forEach(order => {
                                 const docRef = db.collection('orderHistory').doc(order.id);
-                                batch.set(docRef, order);
+                                batch.set(docRef, {
+                                    ...order,
+                                    updatedAt: new Date().toISOString()
+                                });
                             });
                             
                             // Commit the batch
-                            return batch.commit();
-                        })
-                        .then(() => {
+                            await batch.commit();
                             console.log("Order history synced to Firebase");
-                        })
-                        .catch(error => {
-                            console.error("Error saving order history to Firebase:", error);
-                            this.updateConnectionStatus(false);
+                        };
+                        
+                        // Run the sync operation
+                        syncOrderHistory().catch(error => {
+                            console.error("Error syncing order history to Firebase:", error);
+                            this.updateConnectionStatus(false, error);
                         });
+                    } catch (error) {
+                        console.error("Error in order history sync operation:", error);
+                        this.updateConnectionStatus(false, error);
+                    }
                 }
                 
                 this.exportDataToCSV();
@@ -881,7 +1075,16 @@
                         this.currentOrder.discount = this.currentOrder.subtotal * (discountPercent / 100);
                         this.updateOrderTotals();
                     } else {
-                        alert('Please enter a valid discount percentage (0-100)');
+                        const statusEl = document.getElementById('connection-status');
+                        const statusTextEl = document.getElementById('status-text');
+                        statusTextEl.textContent = 'Please enter a valid discount percentage (0-100)';
+                        statusEl.classList.remove('status-online');
+                        statusEl.classList.add('status-offline');
+                        
+                        // Reset after 3 seconds
+                        setTimeout(() => {
+                            this.updateConnectionStatus(this.isOnline);
+                        }, 3000);
                     }
                 }
             },
@@ -915,7 +1118,16 @@
             
             confirmOrder() {
                 if (this.currentOrder.items.length === 0) {
-                    alert('Cannot confirm an empty order');
+                    const statusEl = document.getElementById('connection-status');
+                    const statusTextEl = document.getElementById('status-text');
+                    statusTextEl.textContent = 'Cannot confirm an empty order';
+                    statusEl.classList.remove('status-online');
+                    statusEl.classList.add('status-offline');
+                    
+                    // Reset after 3 seconds
+                    setTimeout(() => {
+                        this.updateConnectionStatus(this.isOnline);
+                    }, 3000);
                     return;
                 }
                 
@@ -1463,19 +1675,17 @@
             
             // Event Listeners
             setupEventListeners() {
-                // Online/Offline Event Listeners
+                // Online/Offline Event Listeners with better error handling
                 window.addEventListener('online', () => {
-                    this.updateConnectionStatus(true);
-                    // Try to sync data when coming back online
-                    if (db) {
-                        this.saveMenuItems();
-                        this.saveKitchenOrders();
-                        this.saveOrderHistory();
+                    console.log("Browser detected online status");
+                    if (!this.isOnline) {
+                        this.attemptReconnect();
                     }
                 });
                 
                 window.addEventListener('offline', () => {
-                    this.updateConnectionStatus(false);
+                    console.log("Browser detected offline status");
+                    this.updateConnectionStatus(false, new Error("Network connection lost"));
                 });
                 
                 // Tab Navigation
@@ -1547,7 +1757,16 @@
                         nameInput.value = '';
                         priceInput.value = '';
                     } else {
-                        alert('Please enter a valid name and price');
+                        const statusEl = document.getElementById('connection-status');
+                        const statusTextEl = document.getElementById('status-text');
+                        statusTextEl.textContent = 'Please enter a valid name and price';
+                        statusEl.classList.remove('status-online');
+                        statusEl.classList.add('status-offline');
+                        
+                        // Reset after 3 seconds
+                        setTimeout(() => {
+                            this.updateConnectionStatus(this.isOnline);
+                        }, 3000);
                     }
                 });
                 
@@ -1571,7 +1790,8 @@
                     // Delete Item
                     if (e.target.closest('.delete-item-btn')) {
                         const button = e.target.closest('.delete-item-btn');
-                        if (confirm('Are you sure you want to delete this item?')) {
+                        const confirmDelete = confirm('Are you sure you want to delete this item?');
+                        if (confirmDelete) {
                             this.deleteMenuItem(button.dataset.id);
                         }
                     }
@@ -1592,7 +1812,16 @@
                         this.updateMenuItem(id, name, price, category);
                         document.getElementById('edit-modal').classList.add('hidden');
                     } else {
-                        alert('Please enter a valid name and price');
+                        const statusEl = document.getElementById('connection-status');
+                        const statusTextEl = document.getElementById('status-text');
+                        statusTextEl.textContent = 'Please enter a valid name and price';
+                        statusEl.classList.remove('status-online');
+                        statusEl.classList.add('status-offline');
+                        
+                        // Reset after 3 seconds
+                        setTimeout(() => {
+                            this.updateConnectionStatus(this.isOnline);
+                        }, 3000);
                     }
                 });
                 
