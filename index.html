@@ -626,7 +626,7 @@
             generateOrderId() {
                 this.orderCounter++;
                 this.saveOrderCounter();
-                return 'PE-' + this.orderCounter;
+                return this.orderCounter;
             },
             
             // Save order counter directly to Firestore
