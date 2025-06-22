@@ -12,6 +12,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -24,7 +25,16 @@
                         config: '#8b5cf6',
                         food: '#e67e22',
                         beverage: '#3498db',
-                        dessert: '#9b59b6'
+                        dessert: '#9b59b6',
+                        persian: {
+                            gold: '#D4AF37',
+                            dark: '#2C1810',
+                            red: '#8B0000'
+                        }
+                    },
+                    fontFamily: {
+                        'persian': ['Cinzel', 'serif'],
+                        'body': ['Crimson Text', 'serif']
                     }
                 }
             },
@@ -71,21 +81,22 @@
         /* Connection status badge */
         #connection-status {
             position: fixed;
-            bottom: 20px;
+            bottom: 80px;
             right: 20px;
-            padding: 8px 12px;
-            border-radius: 20px;
+            padding: 8px 16px;
+            border-radius: 25px;
             font-weight: bold;
             z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         
         .status-online {
-            background-color: #10b981;
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
         }
         
         .status-offline {
-            background-color: #ef4444;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
             color: white;
         }
         
@@ -103,26 +114,112 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Fantasy header styles */
+        .fantasy-header {
+            background: linear-gradient(rgba(44, 24, 16, 0.8), rgba(139, 0, 0, 0.9)), url('https://i.postimg.cc/d1bFGvQS/photo-2025-05-10-15-15-39.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .fantasy-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, transparent 0%, rgba(212, 175, 55, 0.1) 100%);
+            pointer-events: none;
+        }
+        
+        .fantasy-text {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(212, 175, 55, 0.3);
+            font-family: 'Cinzel', serif;
+            letter-spacing: 2px;
+        }
+        
+        .persian-ornament {
+            position: absolute;
+            color: rgba(212, 175, 55, 0.3);
+            font-size: 3rem;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .persian-ornament:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .persian-ornament:nth-child(2) { top: 20%; right: 15%; animation-delay: 2s; }
+        .persian-ornament:nth-child(3) { bottom: 20%; left: 20%; animation-delay: 4s; }
+        .persian-ornament:nth-child(4) { bottom: 10%; right: 10%; animation-delay: 1s; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        /* Error log styles */
+        .error-log {
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
     </style>
 </head>
-<body class="bg-gradient-to-b from-yellow-50 via-white to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-800 dark:text-gray-200">
+<body class="bg-gradient-to-b from-yellow-50 via-white to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-800 dark:text-gray-200 font-body">
     
     <!-- Connection Status Indicator -->
     <div id="connection-status" class="status-offline">
-        <span id="status-text">Offline Mode</span>
+        <span id="status-text">Offline</span>
         <button id="retry-connection" class="ml-2 bg-white bg-opacity-20 px-2 py-1 rounded text-sm">
             Retry
         </button>
     </div>
 
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
     <!-- Authentication Section -->
     <div id="auth-section" class="max-w-sm mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg mt-10">
-        <h2 class="text-xl font-semibold mb-4 text-center">Login</h2>
+        <h2 class="text-xl font-semibold mb-4 text-center font-persian">Login</h2>
         <input type="email" id="email" placeholder="Email" class="w-full p-2 mb-3 border dark:border-gray-600 rounded-lg dark:bg-gray-700 text-base">
         <input type="password" id="password" placeholder="Password" class="w-full p-2 mb-3 border dark:border-gray-600 rounded-lg dark:bg-gray-700 text-base">
         <button id="login-button" onclick="login()" class="w-full bg-primary text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
-    <span id="login-button-text">Login</span>
-    <span id="login-spinner" class="loading-spinner ml-2 hidden"></span></button>
+            <span id="login-button-text">Login</span>
+            <span id="login-spinner" class="loading-spinner ml-2 hidden"></span>
+        </button>
     </div>
     
     <div id="logout-section" class="hidden max-w-sm mx-auto p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg mt-10 text-center">
@@ -132,284 +229,380 @@
     
     <!-- Main Application Section - Initially hidden -->
     <div id="app-section" class="hidden">
-       <div class="container mx-auto px-4 py-8">
+        <div class="container mx-auto px-4 py-8">
 
-        <!-- Header -->
-        <header class="mb-8">
-            <header class="mb-8 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-              <div class="flex flex-col items-center space-y-2">
-                <img src="https://i.postimg.cc/d1bFGvQS/photo-2025-05-10-15-15-39.jpg">
-                <h1 class="text-4xl font-extrabold text-primary">Taste of Persia</h1>
-              </div>
-            </header>
-
-        </header>
-
-        <!-- Tab Navigation -->
-        <div class="flex flex-wrap mb-6 gap-2">
-            <button id="tab-new-order" class="px-4 py-3 rounded-lg bg-order text-white font-semibold flex-grow"><i class="fas fa-utensils mr-2"></i>New Order</button>
-            <button id="tab-kitchen" class="px-4 py-3 rounded-lg bg-kitchen text-white font-semibold flex-grow"><i class="fas fa-fire mr-2"></i>Kitchen Orders</button>
-            <button id="tab-history" class="px-4 py-3 rounded-lg bg-completed text-white font-semibold flex-grow"><i class="fas fa-history mr-2"></i>Order History</button>
-            <button id="tab-config" class="px-4 py-3 rounded-lg bg-config text-white font-semibold flex-grow"><i class="fas fa-cog mr-2"></i>Menu Config</button>
-            <button id="tab-summary" class="px-4 py-3 rounded-lg bg-yellow-600 text-white font-semibold flex-grow"><i class="fas fa-chart-bar mr-2"></i>Sales Summary</button>
-        </div>
-        
-        <!-- Sales Summary Tab -->
-        <div id="summary-tab" class="tab-content hidden">
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                <h2 class="text-xl font-semibold mb-4 text-yellow-600">Sales Summary</h2>
+            <!-- Fantasy Header -->
+            <header class="mb-8 fantasy-header p-12 rounded-xl shadow-2xl text-center relative">
+                <div class="persian-ornament">✦</div>
+                <div class="persian-ornament">❋</div>
+                <div class="persian-ornament">✧</div>
+                <div class="persian-ornament">◆</div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-                        <h3 class="text-lg font-medium mb-2">Total Orders</h3>
-                        <p id="total-orders-count" class="text-3xl font-bold">0</p>
-                    </div>
-                    
-                    <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-                        <h3 class="text-lg font-medium mb-2">Total Revenue</h3>
-                        <p id="total-revenue" class="text-3xl font-bold">$0.00</p>
-                    </div>
-                    
-                    <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-                        <h3 class="text-lg font-medium mb-2">Average Order Value</h3>
-                        <p id="average-order-value" class="text-3xl font-bold">$0.00</p>
+                <div class="relative z-10">
+                    <h1 class="text-6xl font-bold text-white fantasy-text mb-2">
+                        Taste of Persia
+                    </h1>
+                    <p class="text-xl text-persian-gold font-persian italic">
+                        Where Ancient Flavors Meet Modern Excellence
+                    </p>
+                    <div class="mt-4 flex justify-center space-x-4 text-persian-gold">
+                        <span class="text-2xl">🏺</span>
+                        <span class="text-2xl">⚜</span>
+                        <span class="text-2xl">🌙</span>
+                        <span class="text-2xl">⚜</span>
+                        <span class="text-2xl">🏺</span>
                     </div>
                 </div>
-                
-                <div class="mb-8">
-                    <h3 class="text-lg font-medium mb-4">Top Selling Items</h3>
+            </header>
+
+            <!-- Tab Navigation -->
+            <div class="flex flex-wrap mb-6 gap-2">
+                <button id="tab-new-order" class="px-4 py-3 rounded-lg bg-order text-white font-semibold flex-grow"><i class="fas fa-utensils mr-2"></i>New Order</button>
+                <button id="tab-kitchen" class="px-4 py-3 rounded-lg bg-kitchen text-white font-semibold flex-grow"><i class="fas fa-fire mr-2"></i>Kitchen Orders</button>
+                <button id="tab-history" class="px-4 py-3 rounded-lg bg-completed text-white font-semibold flex-grow"><i class="fas fa-history mr-2"></i>Order History</button>
+                <button id="tab-config" class="px-4 py-3 rounded-lg bg-config text-white font-semibold flex-grow"><i class="fas fa-cog mr-2"></i>Menu Config</button>
+                <button id="tab-summary" class="px-4 py-3 rounded-lg bg-yellow-600 text-white font-semibold flex-grow"><i class="fas fa-chart-bar mr-2"></i>Sales Summary</button>
+                <button id="tab-logs" class="px-4 py-3 rounded-lg bg-gray-600 text-white font-semibold flex-grow"><i class="fas fa-bug mr-2"></i>Error Logs</button>
+            </div>
+            
+            <!-- Error Logs Tab -->
+            <div id="logs-tab" class="tab-content hidden">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-600">Error Logs</h2>
+                        <button id="clear-logs" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                            <i class="fas fa-trash mr-2"></i>Clear Logs
+                        </button>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <button id="export-logs" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                            <i class="fas fa-download mr-2"></i>Export Logs for AI
+                        </button>
+                    </div>
+                    
+                    <div id="error-logs" class="error-log bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                        <p class="text-gray-500 dark:text-gray-400">No errors logged yet.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sales Summary Tab -->
+            <div id="summary-tab" class="tab-content hidden">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                    <h2 class="text-xl font-semibold mb-4 text-yellow-600">Sales Summary</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium mb-2">Total Orders</h3>
+                            <p id="total-orders-count" class="text-3xl font-bold">0</p>
+                        </div>
+                        
+                        <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium mb-2">Total Revenue</h3>
+                            <p id="total-revenue" class="text-3xl font-bold">$0.00</p>
+                        </div>
+                        
+                        <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium mb-2">Average Order Value</h3>
+                            <p id="average-order-value" class="text-3xl font-bold">$0.00</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Availability Goals Section -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-medium mb-4">Availability Goals Progress</h3>
+                        <div id="availability-progress" class="space-y-4">
+                            <!-- Progress bars will be dynamically inserted here -->
+                        </div>
+                        <div id="no-availability-data" class="text-center py-8 text-gray-500 dark:text-gray-400">
+                            No availability goals set yet
+                        </div>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h3 class="text-lg font-medium mb-4">Top Selling Items</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b dark:border-gray-700">
+                                        <th class="text-left py-2">Item Name</th>
+                                        <th class="text-right py-2">Quantity Sold</th>
+                                        <th class="text-right py-2">Revenue</th>
+                                        <th class="text-right py-2">Goal Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="top-items" class="divide-y divide-gray-200 dark:divide-gray-700">
+                                    <!-- Top items will be dynamically inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="no-top-items" class="text-center py-8 text-gray-500 dark:text-gray-400">
+                            No sales data available
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-medium mb-4">Data Export</h3>
+                        <button id="export-csv" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition">
+                            <i class="fas fa-file-csv mr-2"></i> Export Sales Data (CSV)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Order Tab -->
+            <div id="new-order-tab" class="tab-content">
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <!-- Menu Items -->
+                    <div class="lg:col-span-3 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-4 text-order">Menu Items</h2>
+                        
+                        <div id="menu-items-container" class="overflow-y-auto max-h-[70vh] custom-scrollbar">
+                            <!-- Food section -->
+                            <h3 class="category-heading food-heading"><i class="fas fa-utensils mr-2"></i>Food</h3>
+                            <div id="food-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+                                <!-- Food items will be dynamically inserted here -->
+                            </div>
+                            
+                            <!-- Beverage section -->
+                            <h3 class="category-heading beverage-heading"><i class="fas fa-coffee mr-2"></i>Beverages</h3>
+                            <div id="beverage-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+                                <!-- Beverage items will be dynamically inserted here -->
+                            </div>
+                            
+                            <!-- Dessert section -->
+                            <h3 class="category-heading dessert-heading"><i class="fas fa-ice-cream mr-2"></i>Desserts</h3>
+                            <div id="dessert-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                <!-- Dessert items will be dynamically inserted here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Order -->
+                    <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-4 text-order">Current Order</h2>
+                        
+                        <!-- Order Number and Takeaway Toggle -->
+                        <div class="mb-4 grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block mb-2 text-sm font-medium">Order Number:</label>
+                                <input type="text" id="order-number-display" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base font-bold text-center" readonly>
+                            </div>
+                            <div>
+                                <label class="block mb-2 text-sm font-medium">Takeaway:</label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="takeaway-toggle" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                    <span class="ml-3 text-sm font-medium" id="takeaway-label">Dine In</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Order Notes -->
+                        <div class="mb-4">
+                            <label for="order-notes" class="block mb-2 text-sm font-medium">Order Notes:</label>
+                            <textarea id="order-notes" rows="3" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base" placeholder="Special instructions, allergies, preferences..."></textarea>
+                        </div>
+                        
+                        <div class="mb-4 max-h-[300px] overflow-y-auto custom-scrollbar">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b dark:border-gray-700">
+                                        <th class="text-left py-2">Item</th>
+                                        <th class="text-center py-2">Qty</th>
+                                        <th class="text-right py-2">Price</th>
+                                        <th class="text-right py-2">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="order-items">
+                                    <!-- Order items will be dynamically inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Order Summary -->
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between">
+                                <span>Subtotal:</span>
+                                <span id="subtotal" class="font-semibold">$0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Discount:</span>
+                                <span id="discount" class="font-semibold">$0.00</span>
+                            </div>
+                            <div class="flex justify-between text-lg">
+                                <span>Total:</span>
+                                <span id="total" class="font-bold">$0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Custom Discount Input -->
+                        <div class="mb-4 grid grid-cols-3 gap-2">
+                            <div class="col-span-1">
+                                <label for="discount-percent" class="block mb-1 text-sm">Discount %:</label>
+                                <input type="number" id="discount-percent" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base" min="0" max="100" value="10">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block mb-1 text-sm opacity-0">Apply</label>
+                                <button id="apply-discount" class="w-full bg-yellow-500 text-white py-2 rounded-lg font-semibold hover:bg-yellow-600 transition">
+                                    Apply Discount
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Payment Section -->
+                        <div class="mb-4">
+                            <label for="amount-received" class="block mb-2">Amount Received:</label>
+                            <input type="number" id="amount-received" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base" min="0" step="0.01">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label for="change" class="block mb-2">Change to Return:</label>
+                            <input type="text" id="change" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 bg-gray-100 dark:bg-gray-800" readonly>
+                        </div>
+
+                        <!-- Order Actions -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <button id="clear-order" class="bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition">
+                                Clear Order
+                            </button>
+                            <button id="confirm-order" class="bg-order text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                                Confirm Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kitchen Orders Tab -->
+            <div id="kitchen-tab" class="tab-content hidden">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                    <h2 class="text-xl font-semibold mb-4 text-kitchen">Kitchen Orders</h2>
+                    <div id="kitchen-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Kitchen orders will be dynamically inserted here -->
+                    </div>
+                    <div id="no-kitchen-orders" class="text-center py-8 text-gray-500 dark:text-gray-400">
+                        No pending orders
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order History Tab -->
+            <div id="history-tab" class="tab-content hidden">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                    <h2 class="text-xl font-semibold mb-4 text-completed">Order History</h2>
+                    <div class="space-y-2 mb-6">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-medium">Completed Orders</h3>
+                            <div class="flex items-center">
+                                <span class="mr-2">Total Sales:</span>
+                                <span id="history-total-sales" class="font-bold text-lg">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b dark:border-gray-700">
+                                    <th class="text-left py-2">Order ID</th>
+                                    <th class="text-left py-2">Date & Time</th>
+                                    <th class="text-left py-2">Type</th>
+                                    <th class="text-left py-2">Items</th>
+                                    <th class="text-left py-2">Notes</th>
+                                    <th class="text-right py-2">Total</th>
+                                    <th class="text-right py-2">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-items" class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <!-- History items will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="no-history" class="text-center py-8 text-gray-500 dark:text-gray-400">
+                        No order history yet
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Configuration Tab -->
+            <div id="config-tab" class="tab-content hidden">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                    <h2 class="text-xl font-semibold mb-4 text-config">Menu Configuration</h2>
+                    
+                    <!-- Add Menu Item Form -->
+                    <div class="mb-8 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                        <h3 class="text-lg font-medium mb-4">Add New Menu Item</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                            <div class="md:col-span-2">
+                                <label for="item-name" class="block mb-2">Item Name:</label>
+                                <input type="text" id="item-name" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base" placeholder="e.g. Cheeseburger">
+                            </div>
+                            <div>
+                                <label for="item-price" class="block mb-2">Price ($):</label>
+                                <input type="number" id="item-price" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base" min="0" step="0.01" placeholder="9.99">
+                            </div>
+                            <div>
+                                <label for="item-category" class="block mb-2">Category:</label>
+                                <select id="item-category" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base">
+                                    <option value="food">Food</option>
+                                    <option value="beverage">Beverage</option>
+                                    <option value="dessert">Dessert</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="item-availability" class="block mb-2">Daily Goal:</label>
+                                <input type="number" id="item-availability" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base" min="0" placeholder="50">
+                            </div>
+                            <div class="flex items-end">
+                                <button id="add-item" class="w-full bg-config text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                                    Add Item
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Menu Items List -->
+                    <h3 class="text-lg font-medium mb-4">Current Menu Items</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b dark:border-gray-700">
                                     <th class="text-left py-2">Item Name</th>
-                                    <th class="text-right py-2">Quantity Sold</th>
-                                    <th class="text-right py-2">Revenue</th>
-                                </tr>
-                            </thead>
-                            <tbody id="top-items" class="divide-y divide-gray-200 dark:divide-gray-700">
-                                <!-- Top items will be dynamically inserted here -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="no-top-items" class="text-center py-8 text-gray-500 dark:text-gray-400">
-                        No sales data available
-                    </div>
-                </div>
-                
-                <div>
-                    <h3 class="text-lg font-medium mb-4">Data Export</h3>
-                    <button id="export-csv" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition">
-                        <i class="fas fa-file-csv mr-2"></i> Export Sales Data (CSV)
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- New Order Tab -->
-        <div id="new-order-tab" class="tab-content">
-            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                <!-- Menu Items -->
-                <div class="lg:col-span-3 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                    <h2 class="text-xl font-semibold mb-4 text-order">Menu Items</h2>
-                    
-                    <div id="menu-items-container" class="overflow-y-auto max-h-[70vh] custom-scrollbar">
-                        <!-- Food section -->
-                        <h3 class="category-heading food-heading"><i class="fas fa-utensils mr-2"></i>Food</h3>
-                        <div id="food-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
-                            <!-- Food items will be dynamically inserted here -->
-                        </div>
-                        
-                        <!-- Beverage section -->
-                        <h3 class="category-heading beverage-heading"><i class="fas fa-coffee mr-2"></i>Beverages</h3>
-                        <div id="beverage-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
-                            <!-- Beverage items will be dynamically inserted here -->
-                        </div>
-                        
-                        <!-- Dessert section -->
-                        <h3 class="category-heading dessert-heading"><i class="fas fa-ice-cream mr-2"></i>Desserts</h3>
-                        <div id="dessert-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                            <!-- Dessert items will be dynamically inserted here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Current Order -->
-                <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                    <h2 class="text-xl font-semibold mb-4 text-order">Current Order</h2>
-                    <div class="mb-4 max-h-[300px] overflow-y-auto custom-scrollbar">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="border-b dark:border-gray-700">
-                                    <th class="text-left py-2">Item</th>
-                                    <th class="text-center py-2">Qty</th>
+                                    <th class="text-left py-2">Category</th>
                                     <th class="text-right py-2">Price</th>
-                                    <th class="text-right py-2">Action</th>
+                                    <th class="text-right py-2">Daily Goal</th>
+                                    <th class="text-right py-2">Sold Today</th>
+                                    <th class="text-right py-2">Progress</th>
+                                    <th class="text-right py-2">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="order-items">
-                                <!-- Order items will be dynamically inserted here -->
+                            <tbody id="menu-config-items" class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <!-- Menu config items will be dynamically inserted here -->
                             </tbody>
                         </table>
                     </div>
-                    
-                    <!-- Order Summary -->
-                    <div class="space-y-2 mb-4">
-                        <div class="flex justify-between">
-                            <span>Subtotal:</span>
-                            <span id="subtotal" class="font-semibold">$0.00</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Discount:</span>
-                            <span id="discount" class="font-semibold">$0.00</span>
-                        </div>
-                        <div class="flex justify-between text-lg">
-                            <span>Total:</span>
-                            <span id="total" class="font-bold">$0.00</span>
-                        </div>
-                    </div>
-
-                    <!-- Custom Discount Input -->
-                    <div class="mb-4 grid grid-cols-3 gap-2">
-                        <div class="col-span-1">
-                            <label for="discount-percent" class="block mb-1 text-sm">Discount %:</label>
-                            <input type="number" id="discount-percent" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base" min="0" max="100" value="10">
-                        </div>
-                        <div class="col-span-2">
-                            <label class="block mb-1 text-sm opacity-0">Apply</label>
-                            <button id="apply-discount" class="w-full bg-yellow-500 text-white py-2 rounded-lg font-semibold hover:bg-yellow-600 transition">
-                                Apply Discount
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Payment Section -->
-                    <div class="mb-4">
-                        <label for="amount-received" class="block mb-2">Amount Received:</label>
-                        <input type="number" id="amount-received" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base" min="0" step="0.01">
-                    </div>
-                    
-                    <div class="mb-6">
-                        <label for="change" class="block mb-2">Change to Return:</label>
-                        <input type="text" id="change" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 bg-gray-100 dark:bg-gray-800" readonly>
-                    </div>
-
-                    <!-- Order Actions -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <button id="clear-order" class="bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition">
-                            Clear Order
-                        </button>
-                        <button id="confirm-order" class="bg-order text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-                            Confirm Order
-                        </button>
+                    <div id="no-menu-items" class="text-center py-8 text-gray-500 dark:text-gray-400">
+                        No menu items yet. Add some items above!
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Kitchen Orders Tab -->
-        <div id="kitchen-tab" class="tab-content hidden">
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                <h2 class="text-xl font-semibold mb-4 text-kitchen">Kitchen Orders</h2>
-                <div id="kitchen-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Kitchen orders will be dynamically inserted here -->
-                </div>
-                <div id="no-kitchen-orders" class="text-center py-8 text-gray-500 dark:text-gray-400">
-                    No pending orders
-                </div>
+    <!-- Zero Sugar Modal -->
+    <div id="zero-sugar-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
+            <h3 class="text-lg font-semibold mb-4">Beverage Options</h3>
+            <p class="mb-4">Would you like this beverage with zero sugar?</p>
+            <div class="flex justify-end space-x-3">
+                <button id="zero-sugar-no" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                    Regular
+                </button>
+                <button id="zero-sugar-yes" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                    Zero Sugar
+                </button>
             </div>
-        </div>
-
-        <!-- Order History Tab -->
-        <div id="history-tab" class="tab-content hidden">
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                <h2 class="text-xl font-semibold mb-4 text-completed">Order History</h2>
-                <div class="space-y-2 mb-6">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-medium">Completed Orders</h3>
-                        <div class="flex items-center">
-                            <span class="mr-2">Total Sales:</span>
-                            <span id="history-total-sales" class="font-bold text-lg">$0.00</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="border-b dark:border-gray-700">
-                                <th class="text-left py-2">Order ID</th>
-                                <th class="text-left py-2">Date &amp; Time</th>
-                                <th class="text-left py-2">Items</th>
-                                <th class="text-right py-2">Total</th>
-                                <th class="text-right py-2">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="history-items" class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <!-- History items will be dynamically inserted here -->
-                        </tbody>
-                    </table>
-                </div>
-                <div id="no-history" class="text-center py-8 text-gray-500 dark:text-gray-400">
-                    No order history yet
-                </div>
-            </div>
-        </div>
-
-        <!-- Menu Configuration Tab -->
-        <div id="config-tab" class="tab-content hidden">
-            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                <h2 class="text-xl font-semibold mb-4 text-config">Menu Configuration</h2>
-                
-                <!-- Add Menu Item Form -->
-                <div class="mb-8 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                    <h3 class="text-lg font-medium mb-4">Add New Menu Item</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div class="md:col-span-2">
-                            <label for="item-name" class="block mb-2">Item Name:</label>
-                            <input type="text" id="item-name" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base" placeholder="e.g. Cheeseburger">
-                        </div>
-                        <div>
-                            <label for="item-price" class="block mb-2">Price ($):</label>
-                            <input type="number" id="item-price" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base" min="0" step="0.01" placeholder="9.99">
-                        </div>
-                        <div>
-                            <label for="item-category" class="block mb-2">Category:</label>
-                            <select id="item-category" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base">
-                                <option value="food">Food</option>
-                                <option value="beverage">Beverage</option>
-                                <option value="dessert">Dessert</option>
-                            </select>
-                        </div>
-                        <div class="flex items-end">
-                            <button id="add-item" class="w-full bg-config text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
-                                Add Item
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Menu Items List -->
-                <h3 class="text-lg font-medium mb-4">Current Menu Items</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="border-b dark:border-gray-700">
-                                <th class="text-left py-2">Item Name</th>
-                                <th class="text-left py-2">Category</th>
-                                <th class="text-right py-2">Price</th>
-                                <th class="text-right py-2">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="menu-config-items" class="divide-y divide-gray-200 dark:divide-gray-700">
-                            <!-- Menu config items will be dynamically inserted here -->
-                        </tbody>
-                    </table>
-                </div>
-                <div id="no-menu-items" class="text-center py-8 text-gray-500 dark:text-gray-400">
-                    No menu items yet. Add some items above!
-                </div>
-            </div>
-        </div>
         </div>
     </div>
 
@@ -433,6 +626,10 @@
                     <option value="beverage">Beverage</option>
                     <option value="dessert">Dessert</option>
                 </select>
+            </div>
+            <div class="mb-4">
+                <label for="edit-item-availability" class="block mb-2">Daily Goal:</label>
+                <input type="number" id="edit-item-availability" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base" min="0">
             </div>
             <div class="flex justify-end space-x-3">
                 <button id="cancel-edit" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
@@ -515,6 +712,161 @@
             }
         });
 
+        // Error Logging System
+        class ErrorLogger {
+            constructor() {
+                this.logs = [];
+                this.maxLogs = 100;
+                this.setupGlobalErrorHandling();
+            }
+
+            setupGlobalErrorHandling() {
+                // Catch unhandled errors
+                window.addEventListener('error', (event) => {
+                    this.logError('Unhandled Error', {
+                        message: event.message,
+                        filename: event.filename,
+                        lineno: event.lineno,
+                        colno: event.colno,
+                        stack: event.error ? event.error.stack : 'No stack trace'
+                    });
+                });
+
+                // Catch unhandled promise rejections
+                window.addEventListener('unhandledrejection', (event) => {
+                    this.logError('Unhandled Promise Rejection', {
+                        reason: event.reason,
+                        stack: event.reason ? event.reason.stack : 'No stack trace'
+                    });
+                });
+
+                // Override console.error to capture manual errors
+                const originalConsoleError = console.error;
+                console.error = (...args) => {
+                    this.logError('Console Error', { message: args.join(' ') });
+                    originalConsoleError.apply(console, args);
+                };
+            }
+
+            logError(type, details) {
+                try {
+                    const logEntry = {
+                        timestamp: new Date().toISOString(),
+                        type: type,
+                        details: details,
+                        userAgent: navigator.userAgent,
+                        url: window.location.href,
+                        userId: firebase.auth().currentUser ? firebase.auth().currentUser.email : 'Not logged in'
+                    };
+
+                    this.logs.unshift(logEntry);
+                    
+                    // Keep only the most recent logs
+                    if (this.logs.length > this.maxLogs) {
+                        this.logs = this.logs.slice(0, this.maxLogs);
+                    }
+
+                    this.updateLogDisplay();
+                    console.log('Error logged:', logEntry);
+                } catch (e) {
+                    // Fail silently to avoid infinite loops
+                    console.warn('Failed to log error:', e);
+                }
+            }
+
+            updateLogDisplay() {
+                const container = document.getElementById('error-logs');
+                if (!container) return;
+
+                if (this.logs.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 dark:text-gray-400">No errors logged yet.</p>';
+                    return;
+                }
+
+                const logsHtml = this.logs.map(log => `
+                    <div class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded">
+                        <div class="font-semibold text-red-700 dark:text-red-300">${log.type}</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">${log.timestamp}</div>
+                        <div class="text-sm mt-2">
+                            <strong>Details:</strong> ${JSON.stringify(log.details, null, 2)}
+                        </div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            User: ${log.userId} | URL: ${log.url}
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = logsHtml;
+            }
+
+            clearLogs() {
+                this.logs = [];
+                this.updateLogDisplay();
+            }
+
+            exportLogs() {
+                const exportData = {
+                    exportTime: new Date().toISOString(),
+                    appVersion: '2.0',
+                    totalErrors: this.logs.length,
+                    logs: this.logs
+                };
+
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `error_logs_${new Date().toISOString().slice(0, 10)}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        // Initialize error logger
+        const errorLogger = new ErrorLogger();
+
+        // Notification System
+        class NotificationSystem {
+            constructor() {
+                this.container = document.getElementById('notification-container');
+            }
+
+            show(message, type = 'info', duration = 5000) {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                
+                this.container.appendChild(notification);
+                
+                // Trigger animation
+                setTimeout(() => notification.classList.add('show'), 100);
+                
+                // Auto remove
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, duration);
+            }
+
+            warning(message) {
+                this.show(message, 'warning');
+            }
+
+            error(message) {
+                this.show(message, 'error');
+            }
+
+            success(message) {
+                this.show(message, 'success');
+            }
+        }
+
+        const notifications = new NotificationSystem();
+
         // Firebase configuration
         const firebaseConfig = {
           apiKey: "AIzaSyAjEtQ_YZcltxOm_4Tbe-NgFOtVBw6u_zQ",
@@ -531,10 +883,8 @@
         
         function initializeFirebase() {
             try {
-                // Check if already initialized to avoid duplicate app errors
                 if (!firebaseInitialized) {
                     firebase.initializeApp(firebaseConfig);
-                    // Set persistence to LOCAL to maintain login across page refreshes
                     firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
                     
                     db = firebase.firestore();
@@ -546,7 +896,7 @@
                     return true;
                 }
             } catch (error) {
-                console.error("Firebase initialization error:", error);
+                errorLogger.logError("Firebase Initialization Error", { error: error.message, stack: error.stack });
                 return false;
             }
         }
@@ -563,177 +913,212 @@
                 discount: 0,
                 total: 0,
                 discountApplied: false,
-                discountPercent: 10 // Default discount percentage
+                discountPercent: 10,
+                notes: '',
+                takeaway: false,
+                orderNumber: null
             },
             kitchenOrders: [],
             orderHistory: [],
-            orderCounter: 1000, // Starting order number
+            orderCounter: 1000,
             isOnline: false,
             reconnectAttempts: 0,
             maxReconnectAttempts: 3,
+            pendingBeverageItem: null, // For zero sugar modal
             
             // Update connection status function
             updateConnectionStatus(online, error) {
-                this.isOnline = online;
-                const statusEl = document.getElementById('connection-status');
-                const statusTextEl = document.getElementById('status-text');
-                const currentUser = firebase.auth().currentUser;
-            
-                if (online) {
-                    if (currentUser) {
-                        statusTextEl.textContent = '✅ Online - Logged in as ' + currentUser.email;
+                try {
+                    this.isOnline = online;
+                    const statusEl = document.getElementById('connection-status');
+                    const statusTextEl = document.getElementById('status-text');
+                
+                    if (online) {
+                        statusTextEl.textContent = '✅ Online';
                         statusEl.classList.remove('status-offline');
                         statusEl.classList.add('status-online');
                     } else {
-                        statusTextEl.textContent = '⚠️ Online - Not Logged In';
+                        if (error) {
+                            statusTextEl.textContent = `❌ Offline: ${error.message || 'Connection failed'}`;
+                        } else {
+                            statusTextEl.textContent = '❌ Offline';
+                        }
                         statusEl.classList.remove('status-online');
                         statusEl.classList.add('status-offline');
                     }
-                } else {
-                    if (error) {
-                        statusTextEl.textContent = `Offline: ${error.message || 'Connection failed'}`;
-                    } else {
-                        statusTextEl.textContent = 'Offline Mode';
-                    }
-                    statusEl.classList.remove('status-online');
-                    statusEl.classList.add('status-offline');
+                } catch (e) {
+                    errorLogger.logError("Connection Status Update Error", { error: e.message, stack: e.stack });
                 }
             },
             
             // Try to reconnect to Firebase
             attemptReconnect() {
-                if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-                    console.log("Max reconnect attempts reached.");
-                    return;
-                }
-                
-                this.reconnectAttempts++;
-                
-                const statusTextEl = document.getElementById('status-text');
-                statusTextEl.textContent = `Trying to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`;
-                
-                // Try to initialize Firebase again
-                if (initializeFirebase()) {
-                    this.updateConnectionStatus(true);
-                    // Set up listeners again
-                    this.setupFirebaseListeners();
-                } else {
-                    this.updateConnectionStatus(false, new Error("Reconnection failed"));
+                try {
+                    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+                        console.log("Max reconnect attempts reached.");
+                        return;
+                    }
+                    
+                    this.reconnectAttempts++;
+                    
+                    const statusTextEl = document.getElementById('status-text');
+                    statusTextEl.textContent = `Trying to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`;
+                    
+                    if (initializeFirebase()) {
+                        this.updateConnectionStatus(true);
+                        this.setupFirebaseListeners();
+                    } else {
+                        this.updateConnectionStatus(false, new Error("Reconnection failed"));
+                    }
+                } catch (e) {
+                    errorLogger.logError("Reconnection Attempt Error", { error: e.message, stack: e.stack });
                 }
             },
             
             // Generate a unique order ID
             generateOrderId() {
-                this.orderCounter++;
-                this.saveOrderCounter();
-                return this.orderCounter;
+                try {
+                    this.orderCounter++;
+                    this.saveOrderCounter();
+                    return this.orderCounter;
+                } catch (e) {
+                    errorLogger.logError("Generate Order ID Error", { error: e.message, stack: e.stack });
+                    return Date.now(); // Fallback to timestamp
+                }
             },
             
             // Save order counter directly to Firestore
             saveOrderCounter() {
-                if (db && this.isOnline) {
-                    db.collection('config').doc('orderCounter').set({
-                        counter: this.orderCounter,
-                        updatedAt: new Date().toISOString()
-                    }).catch(error => {
-                        console.error("Error saving order counter to Firebase:", error);
-                        this.updateConnectionStatus(false, error);
-                    });
+                try {
+                    if (db && this.isOnline) {
+                        db.collection('config').doc('orderCounter').set({
+                            counter: this.orderCounter,
+                            updatedAt: new Date().toISOString()
+                        }).catch(error => {
+                            errorLogger.logError("Save Order Counter Error", { error: error.message });
+                            this.updateConnectionStatus(false, error);
+                        });
+                    }
+                } catch (e) {
+                    errorLogger.logError("Save Order Counter Error", { error: e.message, stack: e.stack });
                 }
             },
             
             // Initialize the app
             init() {
-                // Check network status
-                this.updateConnectionStatus(navigator.onLine);
-                
-                // Setup event listeners
-                this.setupEventListeners();
-                
-                // Setup Firebase retry button
-                document.getElementById('retry-connection').addEventListener('click', () => {
-                    this.attemptReconnect();
-                });
-                
-                // Setup Firebase listeners if we have Firebase initialized
-                if (db) {
-                    this.setupFirebaseListeners();
+                try {
+                    this.updateConnectionStatus(navigator.onLine);
+                    this.setupEventListeners();
+                    this.generateNextOrderNumber();
+                    
+                    document.getElementById('retry-connection').addEventListener('click', () => {
+                        this.attemptReconnect();
+                    });
+                    
+                    if (db) {
+                        this.setupFirebaseListeners();
+                    }
+                } catch (e) {
+                    errorLogger.logError("App Initialization Error", { error: e.message, stack: e.stack });
+                }
+            },
+
+            generateNextOrderNumber() {
+                try {
+                    const orderNumber = this.generateOrderId();
+                    this.currentOrder.orderNumber = orderNumber;
+                    document.getElementById('order-number-display').value = `#${orderNumber}`;
+                } catch (e) {
+                    errorLogger.logError("Generate Next Order Number Error", { error: e.message, stack: e.stack });
                 }
             },
             
             // Setup Firebase real-time listeners with improved error handling
             setupFirebaseListeners() {
-                // Only setup listeners if Firebase is available
-                if (!db) return;
-                
                 try {
-                    // Listen for menu items changes with error handling
+                    if (!db) return;
+                    
+                    // Listen for menu items changes
                     const menuItemsUnsubscribe = db.collection('config').doc('menuItems').onSnapshot(doc => {
-                        if (doc.exists && doc.data().items) {
-                            this.menuItems = doc.data().items;
-                            this.renderMenuItems();
-                            this.renderMenuConfigItems();
-                            this.updateConnectionStatus(true);
-                        } else if (!doc.exists) {
-                            // Create empty menu items document if it doesn't exist
-                            db.collection('config').doc('menuItems').set({
-                                items: [],
-                                updatedAt: new Date().toISOString()
-                            });
-                            this.menuItems = [];
-                            this.renderMenuItems();
-                            this.renderMenuConfigItems();
+                        try {
+                            if (doc.exists && doc.data().items) {
+                                this.menuItems = doc.data().items;
+                                this.renderMenuItems();
+                                this.renderMenuConfigItems();
+                                this.updateConnectionStatus(true);
+                            } else if (!doc.exists) {
+                                db.collection('config').doc('menuItems').set({
+                                    items: [],
+                                    updatedAt: new Date().toISOString()
+                                });
+                                this.menuItems = [];
+                                this.renderMenuItems();
+                                this.renderMenuConfigItems();
+                            }
+                        } catch (e) {
+                            errorLogger.logError("Menu Items Listener Processing Error", { error: e.message, stack: e.stack });
                         }
                     }, error => {
-                        console.error("Menu items listener error:", error);
+                        errorLogger.logError("Menu Items Listener Error", { error: error.message });
                         this.updateConnectionStatus(false, error);
                     });
                     
-                    // Listen for kitchen orders changes with error handling
+                    // Listen for kitchen orders changes
                     const kitchenOrdersUnsubscribe = db.collection('kitchenOrders').onSnapshot(snapshot => {
-                        this.kitchenOrders = [];
-                        snapshot.forEach(doc => {
-                            this.kitchenOrders.push(doc.data());
-                        });
-                        this.renderKitchenOrders();
-                        this.updateConnectionStatus(true);
-                    }, error => {
-                        console.error("Kitchen orders listener error:", error);
-                        this.updateConnectionStatus(false, error);
-                    });
-                    
-                    // Listen for order history changes with error handling
-                    const orderHistoryUnsubscribe = db.collection('orderHistory').onSnapshot(snapshot => {
-                        this.orderHistory = [];
-                        snapshot.forEach(doc => {
-                            this.orderHistory.push(doc.data());
-                        });
-                        this.renderOrderHistory();
-                        this.updateSalesStats();
-                        this.updateHistoryTotalSales();
-                        this.updateConnectionStatus(true);
-                    }, error => {
-                        console.error("Order history listener error:", error);
-                        this.updateConnectionStatus(false, error);
-                    });
-                    
-                    // Listen for order counter changes with error handling
-                    const orderCounterUnsubscribe = db.collection('config').doc('orderCounter').onSnapshot(doc => {
-                        if (doc.exists && doc.data().counter) {
-                            this.orderCounter = doc.data().counter;
-                        } else if (!doc.exists) {
-                            // Create order counter document if it doesn't exist
-                            db.collection('config').doc('orderCounter').set({
-                                counter: this.orderCounter,
-                                updatedAt: new Date().toISOString()
+                        try {
+                            this.kitchenOrders = [];
+                            snapshot.forEach(doc => {
+                                this.kitchenOrders.push(doc.data());
                             });
+                            this.renderKitchenOrders();
+                            this.updateConnectionStatus(true);
+                        } catch (e) {
+                            errorLogger.logError("Kitchen Orders Listener Processing Error", { error: e.message, stack: e.stack });
                         }
                     }, error => {
-                        console.error("Order counter listener error:", error);
+                        errorLogger.logError("Kitchen Orders Listener Error", { error: error.message });
                         this.updateConnectionStatus(false, error);
                     });
                     
-                    // Store unsubscribe functions for cleanup if needed
+                    // Listen for order history changes
+                    const orderHistoryUnsubscribe = db.collection('orderHistory').onSnapshot(snapshot => {
+                        try {
+                            this.orderHistory = [];
+                            snapshot.forEach(doc => {
+                                this.orderHistory.push(doc.data());
+                            });
+                            this.renderOrderHistory();
+                            this.updateSalesStats();
+                            this.updateHistoryTotalSales();
+                            this.checkAvailabilityAlerts();
+                            this.updateConnectionStatus(true);
+                        } catch (e) {
+                            errorLogger.logError("Order History Listener Processing Error", { error: e.message, stack: e.stack });
+                        }
+                    }, error => {
+                        errorLogger.logError("Order History Listener Error", { error: error.message });
+                        this.updateConnectionStatus(false, error);
+                    });
+                    
+                    // Listen for order counter changes
+                    const orderCounterUnsubscribe = db.collection('config').doc('orderCounter').onSnapshot(doc => {
+                        try {
+                            if (doc.exists && doc.data().counter) {
+                                this.orderCounter = doc.data().counter;
+                            } else if (!doc.exists) {
+                                db.collection('config').doc('orderCounter').set({
+                                    counter: this.orderCounter,
+                                    updatedAt: new Date().toISOString()
+                                });
+                            }
+                        } catch (e) {
+                            errorLogger.logError("Order Counter Listener Processing Error", { error: e.message, stack: e.stack });
+                        }
+                    }, error => {
+                        errorLogger.logError("Order Counter Listener Error", { error: error.message });
+                        this.updateConnectionStatus(false, error);
+                    });
+                    
                     this.firebaseUnsubscribes = {
                         menuItems: menuItemsUnsubscribe,
                         kitchenOrders: kitchenOrdersUnsubscribe,
@@ -743,1121 +1128,1134 @@
                     
                     this.updateConnectionStatus(true);
                 } catch (error) {
-                    console.error("Error setting up Firebase listeners:", error);
+                    errorLogger.logError("Firebase Listeners Setup Error", { error: error.message, stack: error.stack });
                     this.updateConnectionStatus(false, error);
                 }
             },
-            
-            // Clean up Firebase listeners
-            cleanupFirebaseListeners() {
-                if (this.firebaseUnsubscribes) {
-                    Object.values(this.firebaseUnsubscribes).forEach(unsubscribe => {
-                        if (typeof unsubscribe === 'function') {
-                            unsubscribe();
+
+            // Check availability alerts (80% warning)
+            checkAvailabilityAlerts() {
+                try {
+                    if (!this.menuItems || this.menuItems.length === 0) return;
+
+                    const today = new Date().toDateString();
+                    const todayOrders = this.orderHistory.filter(order => 
+                        new Date(order.timestamp).toDateString() === today
+                    );
+
+                    // Count sold items for today
+                    const soldToday = {};
+                    todayOrders.forEach(order => {
+                        order.items.forEach(item => {
+                            soldToday[item.name] = (soldToday[item.name] || 0) + item.quantity;
+                        });
+                    });
+
+                    // Check each menu item with availability goal
+                    this.menuItems.forEach(menuItem => {
+                        if (menuItem.availabilityGoal && menuItem.availabilityGoal > 0) {
+                            const sold = soldToday[menuItem.name] || 0;
+                            const percentage = (sold / menuItem.availabilityGoal) * 100;
+                            
+                            if (percentage >= 80 && percentage < 100) {
+                                notifications.warning(`⚠️ ${menuItem.name} is 80% sold out! (${sold}/${menuItem.availabilityGoal})`);
+                            } else if (percentage >= 100) {
+                                notifications.error(`❌ ${menuItem.name} has reached its daily goal! (${sold}/${menuItem.availabilityGoal})`);
+                            }
                         }
                     });
+                } catch (e) {
+                    errorLogger.logError("Availability Alerts Check Error", { error: e.message, stack: e.stack });
                 }
             },
             
-            // Menu item operations - directly with Firestore
-            addMenuItem(name, price, category) {
-                const id = Date.now().toString();
-                const newItem = { id, name, price: parseFloat(price), category };
-                
-                this.menuItems.push(newItem);
-                
-                if (db && this.isOnline) {
-                    db.collection('config').doc('menuItems').set({
-                        items: this.menuItems,
-                        updatedAt: new Date().toISOString()
-                    }).catch(error => {
-                        console.error("Error adding menu item to Firebase:", error);
-                        this.updateConnectionStatus(false, error);
-                    });
-                }
-            },
-            
-            updateMenuItem(id, name, price, category) {
-                const index = this.menuItems.findIndex(item => item.id === id);
-                if (index !== -1) {
-                    this.menuItems[index] = { id, name, price: parseFloat(price), category };
+            // Menu item operations
+            addMenuItem(name, price, category, availability) {
+                try {
+                    const id = Date.now().toString();
+                    const newItem = { 
+                        id, 
+                        name, 
+                        price: parseFloat(price), 
+                        category,
+                        availabilityGoal: availability ? parseInt(availability) : 0
+                    };
+                    
+                    this.menuItems.push(newItem);
                     
                     if (db && this.isOnline) {
                         db.collection('config').doc('menuItems').set({
                             items: this.menuItems,
                             updatedAt: new Date().toISOString()
                         }).catch(error => {
-                            console.error("Error updating menu item in Firebase:", error);
+                            errorLogger.logError("Add Menu Item Firebase Error", { error: error.message });
                             this.updateConnectionStatus(false, error);
                         });
                     }
+                    
+                    notifications.success(`✅ Added ${name} to menu`);
+                } catch (e) {
+                    errorLogger.logError("Add Menu Item Error", { error: e.message, stack: e.stack, item: { name, price, category, availability } });
+                    notifications.error(`❌ Failed to add menu item: ${e.message}`);
+                }
+            },
+            
+            updateMenuItem(id, name, price, category, availability) {
+                try {
+                    const index = this.menuItems.findIndex(item => item.id === id);
+                    if (index !== -1) {
+                        this.menuItems[index] = { 
+                            id, 
+                            name, 
+                            price: parseFloat(price), 
+                            category,
+                            availabilityGoal: availability ? parseInt(availability) : 0
+                        };
+                        
+                        if (db && this.isOnline) {
+                            db.collection('config').doc('menuItems').set({
+                                items: this.menuItems,
+                                updatedAt: new Date().toISOString()
+                            }).catch(error => {
+                                errorLogger.logError("Update Menu Item Firebase Error", { error: error.message });
+                                this.updateConnectionStatus(false, error);
+                            });
+                        }
+                        
+                        notifications.success(`✅ Updated ${name}`);
+                    }
+                } catch (e) {
+                    errorLogger.logError("Update Menu Item Error", { error: e.message, stack: e.stack, item: { id, name, price, category, availability } });
+                    notifications.error(`❌ Failed to update menu item: ${e.message}`);
                 }
             },
             
             deleteMenuItem(id) {
-                this.menuItems = this.menuItems.filter(item => item.id !== id);
-                
-                if (db && this.isOnline) {
-                    db.collection('config').doc('menuItems').set({
-                        items: this.menuItems,
-                        updatedAt: new Date().toISOString()
-                    }).catch(error => {
-                        console.error("Error deleting menu item from Firebase:", error);
-                        this.updateConnectionStatus(false, error);
-                    });
+                try {
+                    const item = this.menuItems.find(item => item.id === id);
+                    this.menuItems = this.menuItems.filter(item => item.id !== id);
+                    
+                    if (db && this.isOnline) {
+                        db.collection('config').doc('menuItems').set({
+                            items: this.menuItems,
+                            updatedAt: new Date().toISOString()
+                        }).catch(error => {
+                            errorLogger.logError("Delete Menu Item Firebase Error", { error: error.message });
+                            this.updateConnectionStatus(false, error);
+                        });
+                    }
+                    
+                    notifications.success(`✅ Deleted ${item ? item.name : 'item'} from menu`);
+                } catch (e) {
+                    errorLogger.logError("Delete Menu Item Error", { error: e.message, stack: e.stack, itemId: id });
+                    notifications.error(`❌ Failed to delete menu item: ${e.message}`);
                 }
             },
             
             // Order operations
-            addItemToOrder(id) {
-                const menuItem = this.menuItems.find(item => item.id === id);
-                if (!menuItem) return;
-                
-                const existingItem = this.currentOrder.items.find(item => item.id === id);
-                
-                if (existingItem) {
-                    existingItem.quantity += 1;
-                    existingItem.total = existingItem.quantity * existingItem.price;
-                } else {
-                    this.currentOrder.items.push({
-                        id: menuItem.id,
-                        name: menuItem.name,
-                        price: menuItem.price,
-                        category: menuItem.category,
-                        quantity: 1,
-                        total: menuItem.price
-                    });
-                }
-                
-                this.updateOrderTotals();
-                this.renderOrderItems();
-            },
-            
-            removeItemFromOrder(id) {
-                const index = this.currentOrder.items.findIndex(item => item.id === id);
-                if (index !== -1) {
-                    if (this.currentOrder.items[index].quantity > 1) {
-                        this.currentOrder.items[index].quantity -= 1;
-                        this.currentOrder.items[index].total = this.currentOrder.items[index].quantity * this.currentOrder.items[index].price;
-                    } else {
-                        this.currentOrder.items.splice(index, 1);
+            addItemToOrder(id, zeroSugar = false) {
+                try {
+                    const menuItem = this.menuItems.find(item => item.id === id);
+                    if (!menuItem) return;
+                    
+                    // Check if it's a beverage and needs zero sugar option
+                    if (menuItem.category === 'beverage' && zeroSugar === null) {
+                        this.pendingBeverageItem = menuItem;
+                        document.getElementById('zero-sugar-modal').classList.remove('hidden');
+                        return;
                     }
+                    
+                    const itemKey = `${id}_${zeroSugar}`;
+                    const existingItem = this.currentOrder.items.find(item => 
+                        item.id === id && item.zeroSugar === zeroSugar
+                    );
+                    
+                    if (existingItem) {
+                        existingItem.quantity += 1;
+                        existingItem.total = existingItem.quantity * existingItem.price;
+                    } else {
+                        const displayName = menuItem.category === 'beverage' && zeroSugar ? 
+                            `${menuItem.name} (Zero Sugar)` : menuItem.name;
+                        
+                        this.currentOrder.items.push({
+                            id: menuItem.id,
+                            name: menuItem.name,
+                            displayName: displayName,
+                            price: menuItem.price,
+                            category: menuItem.category,
+                            quantity: 1,
+                            total: menuItem.price,
+                            zeroSugar: menuItem.category === 'beverage' ? zeroSugar : false
+                        });
+                    }
+                    
                     this.updateOrderTotals();
                     this.renderOrderItems();
+                } catch (e) {
+                    errorLogger.logError("Add Item to Order Error", { error: e.message, stack: e.stack, itemId: id, zeroSugar });
+                    notifications.error(`❌ Failed to add item to order: ${e.message}`);
+                }
+            },
+            
+            removeItemFromOrder(id, zeroSugar = false) {
+                try {
+                    const index = this.currentOrder.items.findIndex(item => 
+                        item.id === id && item.zeroSugar === zeroSugar
+                    );
+                    if (index !== -1) {
+                        if (this.currentOrder.items[index].quantity > 1) {
+                            this.currentOrder.items[index].quantity -= 1;
+                            this.currentOrder.items[index].total = this.currentOrder.items[index].quantity * this.currentOrder.items[index].price;
+                        } else {
+                            this.currentOrder.items.splice(index, 1);
+                        }
+                        this.updateOrderTotals();
+                        this.renderOrderItems();
+                    }
+                } catch (e) {
+                    errorLogger.logError("Remove Item from Order Error", { error: e.message, stack: e.stack, itemId: id, zeroSugar });
+                    notifications.error(`❌ Failed to remove item from order: ${e.message}`);
                 }
             },
             
             updateOrderTotals() {
-                // Calculate subtotal
-                this.currentOrder.subtotal = this.currentOrder.items.reduce((sum, item) => sum + item.total, 0);
-                
-                // Apply discount if it was previously applied
-                if (this.currentOrder.discountApplied) {
-                    this.currentOrder.discount = this.currentOrder.subtotal * (this.currentOrder.discountPercent / 100);
+                try {
+                    this.currentOrder.subtotal = this.currentOrder.items.reduce((sum, item) => sum + item.total, 0);
+                    
+                    if (this.currentOrder.discountApplied) {
+                        this.currentOrder.discount = this.currentOrder.subtotal * (this.currentOrder.discountPercent / 100);
+                    }
+                    
+                    this.currentOrder.total = this.currentOrder.subtotal - this.currentOrder.discount;
+                    
+                    document.getElementById('subtotal').textContent = '$' + this.currentOrder.subtotal.toFixed(2);
+                    document.getElementById('discount').textContent = '$' + this.currentOrder.discount.toFixed(2);
+                    document.getElementById('total').textContent = '$' + this.currentOrder.total.toFixed(2);
+                    
+                    document.getElementById('amount-received').value = '';
+                    document.getElementById('change').value = '';
+                } catch (e) {
+                    errorLogger.logError("Update Order Totals Error", { error: e.message, stack: e.stack });
                 }
-                
-                // Calculate total
-                this.currentOrder.total = this.currentOrder.subtotal - this.currentOrder.discount;
-                
-                // Update DOM
-                document.getElementById('subtotal').textContent = '$' + this.currentOrder.subtotal.toFixed(2);
-                document.getElementById('discount').textContent = '$' + this.currentOrder.discount.toFixed(2);
-                document.getElementById('total').textContent = '$' + this.currentOrder.total.toFixed(2);
-                
-                // Clear amount received and change fields
-                document.getElementById('amount-received').value = '';
-                document.getElementById('change').value = '';
             },
             
             applyDiscount() {
-                if (this.currentOrder.items.length > 0) {
-                    // Get the discount percentage from the input
-                    const discountPercent = parseFloat(document.getElementById('discount-percent').value);
-                    if (!isNaN(discountPercent) && discountPercent >= 0 && discountPercent <= 100) {
-                        this.currentOrder.discountApplied = true;
-                        this.currentOrder.discountPercent = discountPercent;
-                        this.currentOrder.discount = this.currentOrder.subtotal * (discountPercent / 100);
-                        this.updateOrderTotals();
+                try {
+                    if (this.currentOrder.items.length > 0) {
+                        const discountPercent = parseFloat(document.getElementById('discount-percent').value);
+                        if (!isNaN(discountPercent) && discountPercent >= 0 && discountPercent <= 100) {
+                            this.currentOrder.discountApplied = true;
+                            this.currentOrder.discountPercent = discountPercent;
+                            this.currentOrder.discount = this.currentOrder.subtotal * (discountPercent / 100);
+                            this.updateOrderTotals();
+                            notifications.success(`✅ Applied ${discountPercent}% discount`);
+                        } else {
+                            notifications.error('❌ Please enter a valid discount percentage (0-100)');
+                        }
                     } else {
-                        const statusEl = document.getElementById('connection-status');
-                        const statusTextEl = document.getElementById('status-text');
-                        statusTextEl.textContent = 'Please enter a valid discount percentage (0-100)';
-                        statusEl.classList.remove('status-online');
-                        statusEl.classList.add('status-offline');
-                        
-                        // Reset after 3 seconds
-                        setTimeout(() => {
-                            this.updateConnectionStatus(this.isOnline);
-                        }, 3000);
+                        notifications.warning('⚠️ Add items to order before applying discount');
                     }
+                } catch (e) {
+                    errorLogger.logError("Apply Discount Error", { error: e.message, stack: e.stack });
+                    notifications.error(`❌ Failed to apply discount: ${e.message}`);
                 }
             },
             
             calculateChange(amountReceived) {
-                if (amountReceived >= this.currentOrder.total) {
-                    const change = amountReceived - this.currentOrder.total;
-                    document.getElementById('change').value = '$' + change.toFixed(2);
-                } else {
-                    document.getElementById('change').value = 'Insufficient amount';
+                try {
+                    if (amountReceived >= this.currentOrder.total) {
+                        const change = amountReceived - this.currentOrder.total;
+                        document.getElementById('change').value = '$' + change.toFixed(2);
+                    } else {
+                        document.getElementById('change').value = 'Insufficient amount';
+                    }
+                } catch (e) {
+                    errorLogger.logError("Calculate Change Error", { error: e.message, stack: e.stack, amountReceived });
                 }
             },
             
             clearOrder() {
-                this.currentOrder = {
-                    items: [],
-                    subtotal: 0,
-                    discount: 0,
-                    total: 0,
-                    discountApplied: false,
-                    discountPercent: 10
-                };
-                
-                this.renderOrderItems();
-                this.updateOrderTotals();
-                
-                document.getElementById('amount-received').value = '';
-                document.getElementById('change').value = '';
-                document.getElementById('discount-percent').value = '10';
+                try {
+                    this.currentOrder = {
+                        items: [],
+                        subtotal: 0,
+                        discount: 0,
+                        total: 0,
+                        discountApplied: false,
+                        discountPercent: 10,
+                        notes: '',
+                        takeaway: false,
+                        orderNumber: null
+                    };
+                    
+                    this.generateNextOrderNumber();
+                    this.renderOrderItems();
+                    this.updateOrderTotals();
+                    
+                    document.getElementById('amount-received').value = '';
+                    document.getElementById('change').value = '';
+                    document.getElementById('discount-percent').value = '10';
+                    document.getElementById('order-notes').value = '';
+                    document.getElementById('takeaway-toggle').checked = false;
+                    document.getElementById('takeaway-label').textContent = 'Dine In';
+                    
+                    notifications.success('✅ Order cleared');
+                } catch (e) {
+                    errorLogger.logError("Clear Order Error", { error: e.message, stack: e.stack });
+                    notifications.error(`❌ Failed to clear order: ${e.message}`);
+                }
             },
             
             confirmOrder() {
-                if (this.currentOrder.items.length === 0) {
-                    const statusEl = document.getElementById('connection-status');
-                    const statusTextEl = document.getElementById('status-text');
-                    statusTextEl.textContent = 'Cannot confirm an empty order';
-                    statusEl.classList.remove('status-online');
-                    statusEl.classList.add('status-offline');
+                try {
+                    if (this.currentOrder.items.length === 0) {
+                        notifications.warning('⚠️ Cannot confirm an empty order');
+                        return;
+                    }
                     
-                    // Reset after 3 seconds
-                    setTimeout(() => {
-                        this.updateConnectionStatus(this.isOnline);
-                    }, 3000);
-                    return;
+                    const notes = document.getElementById('order-notes').value.trim();
+                    const takeaway = document.getElementById('takeaway-toggle').checked;
+                    
+                    const newOrder = {
+                        id: this.currentOrder.orderNumber,
+                        items: [...this.currentOrder.items],
+                        subtotal: this.currentOrder.subtotal,
+                        discount: this.currentOrder.discount,
+                        discountPercent: this.currentOrder.discountPercent,
+                        total: this.currentOrder.total,
+                        timestamp: new Date().toISOString(),
+                        createdAt: new Date().getTime(),
+                        notes: notes,
+                        takeaway: takeaway
+                    };
+                    
+                    this.kitchenOrders.push(newOrder);
+                    
+                    if (db && this.isOnline) {
+                        db.collection('kitchenOrders').doc(newOrder.id.toString()).set(newOrder)
+                            .then(() => {
+                                notifications.success(`✅ Order #${newOrder.id} confirmed`);
+                            })
+                            .catch(error => {
+                                errorLogger.logError("Confirm Order Firebase Error", { error: error.message });
+                                this.updateConnectionStatus(false, error);
+                                notifications.error(`❌ Failed to save order to kitchen: ${error.message}`);
+                            });
+                    } else {
+                        notifications.success(`✅ Order #${newOrder.id} confirmed (offline mode)`);
+                    }
+                    
+                    this.clearOrder();
+                } catch (e) {
+                    errorLogger.logError("Confirm Order Error", { error: e.message, stack: e.stack });
+                    notifications.error(`❌ Failed to confirm order: ${e.message}`);
                 }
-                
-                const newOrder = {
-                    id: this.generateOrderId(),
-                    items: [...this.currentOrder.items],
-                    subtotal: this.currentOrder.subtotal,
-                    discount: this.currentOrder.discount,
-                    discountPercent: this.currentOrder.discountPercent,
-                    total: this.currentOrder.total,
-                    timestamp: new Date().toISOString(),
-                    createdAt: new Date().getTime()
-                };
-                
-                this.kitchenOrders.push(newOrder);
-                
-                // Save to Firestore
-                if (db && this.isOnline) {
-                    db.collection('kitchenOrders').doc(newOrder.id).set(newOrder)
-                        .catch(error => {
-                            console.error("Error adding order to kitchenOrders:", error);
-                            this.updateConnectionStatus(false, error);
-                        });
-                }
-                
-                this.clearOrder();
             },
             
             completeOrder(id) {
-                const index = this.kitchenOrders.findIndex(order => order.id === id);
-                if (index !== -1) {
-                    const completedOrder = {
-                        ...this.kitchenOrders[index],
-                        completedAt: new Date().getTime()
-                    };
-                    
-                    // Update Firebase in a transaction
-                    if (db && this.isOnline) {
-                        db.runTransaction(transaction => {
-                            // Delete from kitchen orders
-                            const kitchenOrderRef = db.collection('kitchenOrders').doc(id);
-                            transaction.delete(kitchenOrderRef);
-                            
-                            // Add to order history
-                            const historyOrderRef = db.collection('orderHistory').doc(id);
-                            transaction.set(historyOrderRef, completedOrder);
-                            
-                            return Promise.resolve();
-                        }).then(() => {
-                            // Update local arrays after successful transaction
+                try {
+                    const index = this.kitchenOrders.findIndex(order => order.id == id);
+                    if (index !== -1) {
+                        const completedOrder = {
+                            ...this.kitchenOrders[index],
+                            completedAt: new Date().getTime()
+                        };
+                        
+                        if (db && this.isOnline) {
+                            db.runTransaction(transaction => {
+                                const kitchenOrderRef = db.collection('kitchenOrders').doc(id.toString());
+                                transaction.delete(kitchenOrderRef);
+                                
+                                const historyOrderRef = db.collection('orderHistory').doc(id.toString());
+                                transaction.set(historyOrderRef, completedOrder);
+                                
+                                return Promise.resolve();
+                            }).then(() => {
+                                this.orderHistory.unshift(completedOrder);
+                                this.kitchenOrders.splice(index, 1);
+                                this.renderKitchenOrders();
+                                this.renderOrderHistory();
+                                this.updateSalesStats();
+                                this.updateHistoryTotalSales();
+                                notifications.success(`✅ Order #${id} completed`);
+                            }).catch(error => {
+                                errorLogger.logError("Complete Order Transaction Error", { error: error.message });
+                                this.updateConnectionStatus(false, error);
+                                notifications.error(`❌ Failed to complete order: ${error.message}`);
+                            });
+                        } else {
                             this.orderHistory.unshift(completedOrder);
                             this.kitchenOrders.splice(index, 1);
                             this.renderKitchenOrders();
                             this.renderOrderHistory();
                             this.updateSalesStats();
                             this.updateHistoryTotalSales();
-                        }).catch(error => {
-                            console.error("Transaction failed:", error);
-                            this.updateConnectionStatus(false, error);
-                        });
-                    } else {
-                        // Offline mode or no db, just update local arrays
-                        this.orderHistory.unshift(completedOrder);
-                        this.kitchenOrders.splice(index, 1);
-                        this.renderKitchenOrders();
-                        this.renderOrderHistory();
-                        this.updateSalesStats();
-                        this.updateHistoryTotalSales();
-                    }
-                }
-            },
-            
-            editKitchenOrder(id) {
-                const orderIndex = this.kitchenOrders.findIndex(order => order.id === id);
-                if (orderIndex !== -1) {
-                    const order = this.kitchenOrders[orderIndex];
-                    this.openEditOrderModal(order, 'kitchen');
-                }
-            },
-            
-            editHistoryOrder(id) {
-                const orderIndex = this.orderHistory.findIndex(order => order.id === id);
-                if (orderIndex !== -1) {
-                    const order = this.orderHistory[orderIndex];
-                    this.openEditOrderModal(order, 'history');
-                }
-            },
-            
-            openEditOrderModal(order, type) {
-                document.getElementById('edit-order-id').value = order.id;
-                document.getElementById('edit-order-type').value = type;
-                
-                const itemsContainer = document.getElementById('edit-order-items');
-                itemsContainer.innerHTML = '';
-                
-                // Fill items into the modal
-                order.items.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.className = 'border-b dark:border-gray-700';
-                    row.innerHTML = `
-                        <td class="py-2">${item.name}</td>
-                        <td class="py-2 text-center">
-                            <div class="flex items-center justify-center">
-                                <button class="edit-qty-minus bg-gray-200 dark:bg-gray-700 px-2 rounded-l" data-id="${item.id}">-</button>
-                                <span class="px-2">${item.quantity}</span>
-                                <button class="edit-qty-plus bg-gray-200 dark:bg-gray-700 px-2 rounded-r" data-id="${item.id}">+</button>
-                            </div>
-                        </td>
-                        <td class="py-2 text-right">$${item.total.toFixed(2)}</td>
-                        <td class="py-2 text-right">
-                            <button class="edit-remove-item text-red-500 hover:text-red-700" data-id="${item.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    itemsContainer.appendChild(row);
-                });
-                
-                // Set discount
-                document.getElementById('edit-discount-percent').value = order.discountPercent || 0;
-                
-                // Set totals
-                document.getElementById('edit-subtotal').textContent = '$' + order.subtotal.toFixed(2);
-                document.getElementById('edit-discount').textContent = '$' + order.discount.toFixed(2);
-                document.getElementById('edit-total').textContent = '$' + order.total.toFixed(2);
-                
-                // Show modal
-                document.getElementById('edit-order-modal').classList.remove('hidden');
-            },
-            
-            handleEditOrderQtyChange(itemId, change) {
-                const orderId = document.getElementById('edit-order-id').value;
-                const orderType = document.getElementById('edit-order-type').value;
-                
-                // Find the order
-                let orders = orderType === 'kitchen' ? this.kitchenOrders : this.orderHistory;
-                const orderIndex = orders.findIndex(order => order.id === orderId);
-                
-                if (orderIndex !== -1) {
-                    // Find the item
-                    const itemIndex = orders[orderIndex].items.findIndex(item => item.id === itemId);
-                    
-                    if (itemIndex !== -1) {
-                        const item = orders[orderIndex].items[itemIndex];
-                        
-                        // Update quantity
-                        if (change === 'add') {
-                            item.quantity += 1;
-                        } else if (change === 'subtract' && item.quantity > 1) {
-                            item.quantity -= 1;
-                        } else if (change === 'remove') {
-                            orders[orderIndex].items.splice(itemIndex, 1);
+                            notifications.success(`✅ Order #${id} completed (offline mode)`);
                         }
-                        
-                        // Update item total
-                        if (change !== 'remove') {
-                            item.total = item.quantity * item.price;
-                        }
-                        
-                        // Recalculate order totals
-                        this.recalculateOrderTotals(orders[orderIndex]);
-                        
-                        // Update edit modal display
-                        this.updateEditOrderModal(orders[orderIndex]);
                     }
-                }
-            },
-            
-            recalculateOrderTotals(order) {
-                // Calculate subtotal
-                order.subtotal = order.items.reduce((sum, item) => sum + item.total, 0);
-                
-                // Apply discount
-                if (order.discountPercent) {
-                    order.discount = order.subtotal * (order.discountPercent / 100);
-                } else {
-                    order.discount = 0;
-                }
-                
-                // Calculate total
-                order.total = order.subtotal - order.discount;
-            },
-            
-            updateEditOrderModal(order) {
-                // Update items in the modal
-                const itemsContainer = document.getElementById('edit-order-items');
-                itemsContainer.innerHTML = '';
-                
-                order.items.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.className = 'border-b dark:border-gray-700';
-                    row.innerHTML = `
-                        <td class="py-2">${item.name}</td>
-                        <td class="py-2 text-center">
-                            <div class="flex items-center justify-center">
-                                <button class="edit-qty-minus bg-gray-200 dark:bg-gray-700 px-2 rounded-l" data-id="${item.id}">-</button>
-                                <span class="px-2">${item.quantity}</span>
-                                <button class="edit-qty-plus bg-gray-200 dark:bg-gray-700 px-2 rounded-r" data-id="${item.id}">+</button>
-                            </div>
-                        </td>
-                        <td class="py-2 text-right">$${item.total.toFixed(2)}</td>
-                        <td class="py-2 text-right">
-                            <button class="edit-remove-item text-red-500 hover:text-red-700" data-id="${item.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    itemsContainer.appendChild(row);
-                });
-                
-                // Update totals
-                document.getElementById('edit-subtotal').textContent = '$' + order.subtotal.toFixed(2);
-                document.getElementById('edit-discount').textContent = '$' + order.discount.toFixed(2);
-                document.getElementById('edit-total').textContent = '$' + order.total.toFixed(2);
-            },
-            
-            saveEditedOrder() {
-                const orderId = document.getElementById('edit-order-id').value;
-                const orderType = document.getElementById('edit-order-type').value;
-                const discountPercent = parseFloat(document.getElementById('edit-discount-percent').value);
-                
-                // Find the order
-                let orders = orderType === 'kitchen' ? this.kitchenOrders : this.orderHistory;
-                const orderIndex = orders.findIndex(order => order.id === orderId);
-                
-                if (orderIndex !== -1) {
-                    // Update discount
-                    if (!isNaN(discountPercent) && discountPercent >= 0 && discountPercent <= 100) {
-                        orders[orderIndex].discountPercent = discountPercent;
-                        orders[orderIndex].discount = orders[orderIndex].subtotal * (discountPercent / 100);
-                        orders[orderIndex].total = orders[orderIndex].subtotal - orders[orderIndex].discount;
-                    }
-                    
-                    // Save changes to Firestore
-                    if (db && this.isOnline) {
-                        const collection = orderType === 'kitchen' ? 'kitchenOrders' : 'orderHistory';
-                        db.collection(collection).doc(orderId).set(orders[orderIndex])
-                            .catch(error => {
-                                console.error(`Error updating ${orderType} order:`, error);
-                                this.updateConnectionStatus(false, error);
-                            });
-                    }
-                    
-                    // Close modal
-                    document.getElementById('edit-order-modal').classList.add('hidden');
-                    
-                    // Update UI if needed
-                    if (orderType === 'kitchen') {
-                        this.renderKitchenOrders();
-                    } else {
-                        this.renderOrderHistory();
-                        this.updateSalesStats();
-                        this.updateHistoryTotalSales();
-                    }
+                } catch (e) {
+                    errorLogger.logError("Complete Order Error", { error: e.message, stack: e.stack, orderId: id });
+                    notifications.error(`❌ Failed to complete order: ${e.message}`);
                 }
             },
             
             // Sales statistics
             updateSalesStats() {
-                if (this.orderHistory.length === 0) {
-                    document.getElementById('total-orders-count').textContent = '0';
-                    document.getElementById('total-revenue').textContent = '$0.00';
-                    document.getElementById('average-order-value').textContent = '$0.00';
-                    document.getElementById('no-top-items').classList.remove('hidden');
-                    document.getElementById('top-items').innerHTML = '';
-                    return;
-                }
-                
-                // Total orders
-                document.getElementById('total-orders-count').textContent = this.orderHistory.length;
-                
-                // Total revenue
-                const totalRevenue = this.orderHistory.reduce((sum, order) => sum + order.total, 0);
-                document.getElementById('total-revenue').textContent = '$' + totalRevenue.toFixed(2);
-                
-                // Average order value
-                const avgOrderValue = totalRevenue / this.orderHistory.length;
-                document.getElementById('average-order-value').textContent = '$' + avgOrderValue.toFixed(2);
-                
-                // Top selling items
-                const itemSales = {};
-                
-                // Count item occurrences and calculate revenue
-                this.orderHistory.forEach(order => {
-                    order.items.forEach(item => {
-                        if (!itemSales[item.name]) {
-                            itemSales[item.name] = {
-                                quantity: 0,
-                                revenue: 0
-                            };
-                        }
-                        
-                        itemSales[item.name].quantity += item.quantity;
-                        itemSales[item.name].revenue += item.total;
-                    });
-                });
-                
-                // Convert to array and sort by quantity
-                const sortedItems = Object.entries(itemSales)
-                    .map(([name, stats]) => ({
-                        name,
-                        quantity: stats.quantity,
-                        revenue: stats.revenue
-                    }))
-                    .sort((a, b) => b.quantity - a.quantity);
-                
-                // Display top items
-                const topItemsContainer = document.getElementById('top-items');
-                topItemsContainer.innerHTML = '';
-                
-                if (sortedItems.length === 0) {
-                    document.getElementById('no-top-items').classList.remove('hidden');
-                } else {
-                    document.getElementById('no-top-items').classList.add('hidden');
+                try {
+                    if (this.orderHistory.length === 0) {
+                        document.getElementById('total-orders-count').textContent = '0';
+                        document.getElementById('total-revenue').textContent = '$0.00';
+                        document.getElementById('average-order-value').textContent = '$0.00';
+                        document.getElementById('no-top-items').classList.remove('hidden');
+                        document.getElementById('top-items').innerHTML = '';
+                        this.updateAvailabilityProgress();
+                        return;
+                    }
                     
-                    // Display top 10 items
-                    sortedItems.slice(0, 10).forEach(item => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td class="py-2">${item.name}</td>
-                            <td class="py-2 text-right">${item.quantity}</td>
-                            <td class="py-2 text-right">$${item.revenue.toFixed(2)}</td>
-                        `;
-                        topItemsContainer.appendChild(row);
+                    document.getElementById('total-orders-count').textContent = this.orderHistory.length;
+                    
+                    const totalRevenue = this.orderHistory.reduce((sum, order) => sum + order.total, 0);
+                    document.getElementById('total-revenue').textContent = '$' + totalRevenue.toFixed(2);
+                    
+                    const avgOrderValue = totalRevenue / this.orderHistory.length;
+                    document.getElementById('average-order-value').textContent = '$' + avgOrderValue.toFixed(2);
+                    
+                    // Top selling items with goal progress
+                    const itemSales = {};
+                    
+                    this.orderHistory.forEach(order => {
+                        order.items.forEach(item => {
+                            const key = item.displayName || item.name;
+                            if (!itemSales[key]) {
+                                itemSales[key] = {
+                                    quantity: 0,
+                                    revenue: 0,
+                                    menuItem: this.menuItems.find(mi => mi.name === item.name)
+                                };
+                            }
+                            
+                            itemSales[key].quantity += item.quantity;
+                            itemSales[key].revenue += item.total;
+                        });
                     });
+                    
+                    const sortedItems = Object.entries(itemSales)
+                        .map(([name, stats]) => ({
+                            name,
+                            quantity: stats.quantity,
+                            revenue: stats.revenue,
+                            menuItem: stats.menuItem
+                        }))
+                        .sort((a, b) => b.quantity - a.quantity);
+                    
+                    const topItemsContainer = document.getElementById('top-items');
+                    topItemsContainer.innerHTML = '';
+                    
+                    if (sortedItems.length === 0) {
+                        document.getElementById('no-top-items').classList.remove('hidden');
+                    } else {
+                        document.getElementById('no-top-items').classList.add('hidden');
+                        
+                        sortedItems.slice(0, 10).forEach(item => {
+                            const row = document.createElement('tr');
+                            
+                            let progressDisplay = 'N/A';
+                            if (item.menuItem && item.menuItem.availabilityGoal && item.menuItem.availabilityGoal > 0) {
+                                const percentage = (item.quantity / item.menuItem.availabilityGoal * 100).toFixed(1);
+                                progressDisplay = `${percentage}% (${item.quantity}/${item.menuItem.availabilityGoal})`;
+                            }
+                            
+                            row.innerHTML = `
+                                <td class="py-2">${item.name}</td>
+                                <td class="py-2 text-right">${item.quantity}</td>
+                                <td class="py-2 text-right">$${item.revenue.toFixed(2)}</td>
+                                <td class="py-2 text-right">${progressDisplay}</td>
+                            `;
+                            topItemsContainer.appendChild(row);
+                        });
+                    }
+                    
+                    this.updateAvailabilityProgress();
+                } catch (e) {
+                    errorLogger.logError("Update Sales Stats Error", { error: e.message, stack: e.stack });
+                }
+            },
+
+            updateAvailabilityProgress() {
+                try {
+                    const container = document.getElementById('availability-progress');
+                    const noDataMessage = document.getElementById('no-availability-data');
+                    
+                    const itemsWithGoals = this.menuItems.filter(item => item.availabilityGoal && item.availabilityGoal > 0);
+                    
+                    if (itemsWithGoals.length === 0) {
+                        noDataMessage.classList.remove('hidden');
+                        container.innerHTML = '';
+                        return;
+                    }
+                    
+                    noDataMessage.classList.add('hidden');
+                    
+                    // Calculate today's sales
+                    const today = new Date().toDateString();
+                    const todayOrders = this.orderHistory.filter(order => 
+                        new Date(order.timestamp).toDateString() === today
+                    );
+                    
+                    const soldToday = {};
+                    todayOrders.forEach(order => {
+                        order.items.forEach(item => {
+                            soldToday[item.name] = (soldToday[item.name] || 0) + item.quantity;
+                        });
+                    });
+                    
+                    container.innerHTML = '';
+                    
+                    itemsWithGoals.forEach(item => {
+                        const sold = soldToday[item.name] || 0;
+                        const percentage = (sold / item.availabilityGoal) * 100;
+                        const progressClass = percentage >= 100 ? 'bg-red-500' : percentage >= 80 ? 'bg-yellow-500' : 'bg-green-500';
+                        
+                        const progressBar = document.createElement('div');
+                        progressBar.className = 'mb-4';
+                        progressBar.innerHTML = `
+                            <div class="flex justify-between mb-1">
+                                <span class="font-medium">${item.name}</span>
+                                <span>${sold}/${item.availabilityGoal} (${percentage.toFixed(1)}%)</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                                <div class="${progressClass} h-2.5 rounded-full transition-all duration-300" style="width: ${Math.min(percentage, 100)}%"></div>
+                            </div>
+                        `;
+                        container.appendChild(progressBar);
+                    });
+                } catch (e) {
+                    errorLogger.logError("Update Availability Progress Error", { error: e.message, stack: e.stack });
                 }
             },
             
             updateHistoryTotalSales() {
-                if (this.orderHistory.length === 0) {
-                    document.getElementById('history-total-sales').textContent = '$0.00';
-                    return;
+                try {
+                    if (this.orderHistory.length === 0) {
+                        document.getElementById('history-total-sales').textContent = '$0.00';
+                        return;
+                    }
+                    
+                    const totalSales = this.orderHistory.reduce((sum, order) => sum + order.total, 0);
+                    document.getElementById('history-total-sales').textContent = '$' + totalSales.toFixed(2);
+                } catch (e) {
+                    errorLogger.logError("Update History Total Sales Error", { error: e.message, stack: e.stack });
                 }
-                
-                const totalSales = this.orderHistory.reduce((sum, order) => sum + order.total, 0);
-                document.getElementById('history-total-sales').textContent = '$' + totalSales.toFixed(2);
             },
             
             // CSV Export
             downloadCSV() {
-                // Create CSV content for kitchen orders
-                let kitchenOrdersCSV = 'Order ID,Date,Time,Items,Subtotal,Discount,Total\n';
-                
-                this.kitchenOrders.forEach(order => {
-                    const date = new Date(order.timestamp);
-                    const dateFormatted = date.toLocaleDateString();
-                    const timeFormatted = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                try {
+                    let kitchenOrdersCSV = 'Order ID,Date,Time,Type,Items,Notes,Subtotal,Discount,Total\n';
                     
-                    const itemsList = order.items.map(item => 
-                        `${item.quantity}x ${item.name}`
-                    ).join('; ');
+                    this.kitchenOrders.forEach(order => {
+                        const date = new Date(order.timestamp);
+                        const dateFormatted = date.toLocaleDateString();
+                        const timeFormatted = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        
+                        const itemsList = order.items.map(item => 
+                            `${item.quantity}x ${item.displayName || item.name}`
+                        ).join('; ');
+                        
+                        const orderType = order.takeaway ? 'Takeaway' : 'Dine In';
+                        const notes = (order.notes || '').replace(/"/g, '""');
+                        
+                        kitchenOrdersCSV += `${order.id},${dateFormatted},${timeFormatted},${orderType},"${itemsList}","${notes}",${order.subtotal.toFixed(2)},${order.discount.toFixed(2)},${order.total.toFixed(2)}\n`;
+                    });
                     
-                    kitchenOrdersCSV += `${order.id},${dateFormatted},${timeFormatted},"${itemsList}",${order.subtotal.toFixed(2)},${order.discount.toFixed(2)},${order.total.toFixed(2)}\n`;
-                });
-                
-                // Create CSV content for order history
-                let historyCSV = 'Order ID,Date,Time,Items,Subtotal,Discount,Total\n';
-                
-                this.orderHistory.forEach(order => {
-                    const date = new Date(order.timestamp);
-                    const dateFormatted = date.toLocaleDateString();
-                    const timeFormatted = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    let historyCSV = 'Order ID,Date,Time,Type,Items,Notes,Subtotal,Discount,Total\n';
                     
-                    const itemsList = order.items.map(item => 
-                        `${item.quantity}x ${item.name}`
-                    ).join('; ');
+                    this.orderHistory.forEach(order => {
+                        const date = new Date(order.timestamp);
+                        const dateFormatted = date.toLocaleDateString();
+                        const timeFormatted = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        
+                        const itemsList = order.items.map(item => 
+                            `${item.quantity}x ${item.displayName || item.name}`
+                        ).join('; ');
+                        
+                        const orderType = order.takeaway ? 'Takeaway' : 'Dine In';
+                        const notes = (order.notes || '').replace(/"/g, '""');
+                        
+                        historyCSV += `${order.id},${dateFormatted},${timeFormatted},${orderType},"${itemsList}","${notes}",${order.subtotal.toFixed(2)},${order.discount.toFixed(2)},${order.total.toFixed(2)}\n`;
+                    });
                     
-                    historyCSV += `${order.id},${dateFormatted},${timeFormatted},"${itemsList}",${order.subtotal.toFixed(2)},${order.discount.toFixed(2)},${order.total.toFixed(2)}\n`;
-                });
-                
-                // Combine both CSV data
-                const combinedCSV = 
-                    "KITCHEN ORDERS\n" + 
-                    kitchenOrdersCSV + 
-                    "\n\nORDER HISTORY\n" + 
-                    historyCSV;
-                
-                // Create blob
-                const blob = new Blob([combinedCSV], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                
-                // Create link and trigger download
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', 'persiche_ecke_sales_' + new Date().toISOString().slice(0, 10) + '.csv');
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                    const combinedCSV = 
+                        "KITCHEN ORDERS\n" + 
+                        kitchenOrdersCSV + 
+                        "\n\nORDER HISTORY\n" + 
+                        historyCSV;
+                    
+                    const blob = new Blob([combinedCSV], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', 'persiche_ecke_sales_' + new Date().toISOString().slice(0, 10) + '.csv');
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    notifications.success('✅ Sales data exported successfully');
+                } catch (e) {
+                    errorLogger.logError("Download CSV Error", { error: e.message, stack: e.stack });
+                    notifications.error(`❌ Failed to export data: ${e.message}`);
+                }
             },
             
             // UI Rendering
             renderMenuItems() {
-                // Clear all containers
-                document.getElementById('food-items').innerHTML = '';
-                document.getElementById('beverage-items').innerHTML = '';
-                document.getElementById('dessert-items').innerHTML = '';
-                
-                // Group items by category
-                const foodItems = this.menuItems.filter(item => item.category === 'food');
-                const beverageItems = this.menuItems.filter(item => item.category === 'beverage');
-                const dessertItems = this.menuItems.filter(item => item.category === 'dessert');
-                
-                // Render each category
-                this.renderCategoryItems(foodItems, 'food-items', 'food', 'utensils');
-                this.renderCategoryItems(beverageItems, 'beverage-items', 'beverage', 'coffee');
-                this.renderCategoryItems(dessertItems, 'dessert-items', 'dessert', 'ice-cream');
+                try {
+                    document.getElementById('food-items').innerHTML = '';
+                    document.getElementById('beverage-items').innerHTML = '';
+                    document.getElementById('dessert-items').innerHTML = '';
+                    
+                    const foodItems = this.menuItems.filter(item => item.category === 'food');
+                    const beverageItems = this.menuItems.filter(item => item.category === 'beverage');
+                    const dessertItems = this.menuItems.filter(item => item.category === 'dessert');
+                    
+                    this.renderCategoryItems(foodItems, 'food-items', 'food', 'utensils');
+                    this.renderCategoryItems(beverageItems, 'beverage-items', 'beverage', 'coffee');
+                    this.renderCategoryItems(dessertItems, 'dessert-items', 'dessert', 'ice-cream');
+                } catch (e) {
+                    errorLogger.logError("Render Menu Items Error", { error: e.message, stack: e.stack });
+                }
             },
             
             renderCategoryItems(items, containerId, category, icon) {
-                const container = document.getElementById(containerId);
-                
-                items.forEach(item => {
-                    const button = document.createElement('button');
-                    button.className = 'bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition shadow-sm text-left';
+                try {
+                    const container = document.getElementById(containerId);
                     
-                    button.innerHTML = `
-                        <div class="flex justify-between items-center">
-                            <div class="font-medium truncate">${item.name}</div>
-                            <div class="text-${category}"><i class="fas fa-${icon}"></i></div>
-                        </div>
-                        <div class="text-primary font-bold">$${item.price.toFixed(2)}</div>
-                    `;
-                    button.dataset.id = item.id;
-                    container.appendChild(button);
-                });
+                    items.forEach(item => {
+                        const button = document.createElement('button');
+                        button.className = 'bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition shadow-sm text-left';
+                        
+                        button.innerHTML = `
+                            <div class="flex justify-between items-center">
+                                <div class="font-medium truncate">${item.name}</div>
+                                <div class="text-${category}"><i class="fas fa-${icon}"></i></div>
+                            </div>
+                            <div class="text-primary font-bold">$${item.price.toFixed(2)}</div>
+                        `;
+                        button.dataset.id = item.id;
+                        container.appendChild(button);
+                    });
+                } catch (e) {
+                    errorLogger.logError("Render Category Items Error", { error: e.message, stack: e.stack, category, containerId });
+                }
             },
             
             renderMenuConfigItems() {
-                const container = document.getElementById('menu-config-items');
-                const noItemsMessage = document.getElementById('no-menu-items');
-                
-                container.innerHTML = '';
-                
-                if (this.menuItems.length === 0) {
-                    noItemsMessage.classList.remove('hidden');
-                } else {
-                    noItemsMessage.classList.add('hidden');
+                try {
+                    const container = document.getElementById('menu-config-items');
+                    const noItemsMessage = document.getElementById('no-menu-items');
                     
-                    this.menuItems.forEach(item => {
-                        const row = document.createElement('tr');
+                    container.innerHTML = '';
+                    
+                    if (this.menuItems.length === 0) {
+                        noItemsMessage.classList.remove('hidden');
+                    } else {
+                        noItemsMessage.classList.add('hidden');
                         
-                        // Map category to display name
-                        let categoryDisplay = 'Food';
-                        if (item.category === 'beverage') categoryDisplay = 'Beverage';
-                        if (item.category === 'dessert') categoryDisplay = 'Dessert';
+                        // Calculate today's sales for progress
+                        const today = new Date().toDateString();
+                        const todayOrders = this.orderHistory.filter(order => 
+                            new Date(order.timestamp).toDateString() === today
+                        );
                         
-                        row.innerHTML = `
-                            <td class="py-3">${item.name}</td>
-                            <td class="py-3">${categoryDisplay}</td>
-                            <td class="py-3 text-right">$${item.price.toFixed(2)}</td>
-                            <td class="py-3 text-right">
-                                <button class="edit-item-btn bg-blue-500 text-white px-2 py-1 rounded-md mr-2 hover:bg-blue-600 transition" data-id="${item.id}">
-                                    Edit
-                                </button>
-                                <button class="delete-item-btn bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition" data-id="${item.id}">
-                                    Delete
-                                </button>
-                            </td>
-                        `;
-                        container.appendChild(row);
-                    });
+                        const soldToday = {};
+                        todayOrders.forEach(order => {
+                            order.items.forEach(item => {
+                                soldToday[item.name] = (soldToday[item.name] || 0) + item.quantity;
+                            });
+                        });
+                        
+                        this.menuItems.forEach(item => {
+                            const row = document.createElement('tr');
+                            
+                            let categoryDisplay = 'Food';
+                            if (item.category === 'beverage') categoryDisplay = 'Beverage';
+                            if (item.category === 'dessert') categoryDisplay = 'Dessert';
+                            
+                            const sold = soldToday[item.name] || 0;
+                            const goal = item.availabilityGoal || 0;
+                            const progressDisplay = goal > 0 ? `${((sold / goal) * 100).toFixed(1)}%` : 'N/A';
+                            
+                            row.innerHTML = `
+                                <td class="py-3">${item.name}</td>
+                                <td class="py-3">${categoryDisplay}</td>
+                                <td class="py-3 text-right">$${item.price.toFixed(2)}</td>
+                                <td class="py-3 text-right">${goal || 'Not Set'}</td>
+                                <td class="py-3 text-right">${sold}</td>
+                                <td class="py-3 text-right">${progressDisplay}</td>
+                                <td class="py-3 text-right">
+                                    <button class="edit-item-btn bg-blue-500 text-white px-2 py-1 rounded-md mr-2 hover:bg-blue-600 transition" data-id="${item.id}">
+                                        Edit
+                                    </button>
+                                    <button class="delete-item-btn bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition" data-id="${item.id}">
+                                        Delete
+                                    </button>
+                                </td>
+                            `;
+                            container.appendChild(row);
+                        });
+                    }
+                } catch (e) {
+                    errorLogger.logError("Render Menu Config Items Error", { error: e.message, stack: e.stack });
                 }
             },
             
             renderOrderItems() {
-                const container = document.getElementById('order-items');
-                container.innerHTML = '';
-                
-                this.currentOrder.items.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.className = 'border-b dark:border-gray-700';
-                    row.innerHTML = `
-                        <td class="py-2">${item.name}</td>
-                        <td class="py-2 text-center">${item.quantity}</td>
-                        <td class="py-2 text-right">$${item.total.toFixed(2)}</td>
-                        <td class="py-2 text-right">
-                            <button class="remove-item-btn text-red-500 hover:text-red-700" data-id="${item.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    container.appendChild(row);
-                });
+                try {
+                    const container = document.getElementById('order-items');
+                    container.innerHTML = '';
+                    
+                    this.currentOrder.items.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b dark:border-gray-700';
+                        row.innerHTML = `
+                            <td class="py-2">${item.displayName || item.name}</td>
+                            <td class="py-2 text-center">${item.quantity}</td>
+                            <td class="py-2 text-right">$${item.total.toFixed(2)}</td>
+                            <td class="py-2 text-right">
+                                <button class="remove-item-btn text-red-500 hover:text-red-700" data-id="${item.id}" data-zero-sugar="${item.zeroSugar}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        container.appendChild(row);
+                    });
+                } catch (e) {
+                    errorLogger.logError("Render Order Items Error", { error: e.message, stack: e.stack });
+                }
             },
             
             formatDateTime(isoString) {
-                const date = new Date(isoString);
-                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                try {
+                    const date = new Date(isoString);
+                    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                } catch (e) {
+                    errorLogger.logError("Format DateTime Error", { error: e.message, stack: e.stack, isoString });
+                    return 'Invalid Date';
+                }
             },
             
             renderKitchenOrders() {
-                const container = document.getElementById('kitchen-orders');
-                const noOrdersMessage = document.getElementById('no-kitchen-orders');
-                
-                container.innerHTML = '';
-                
-                if (this.kitchenOrders.length === 0) {
-                    noOrdersMessage.classList.remove('hidden');
-                } else {
-                    noOrdersMessage.classList.add('hidden');
+                try {
+                    const container = document.getElementById('kitchen-orders');
+                    const noOrdersMessage = document.getElementById('no-kitchen-orders');
                     
-                    this.kitchenOrders.forEach(order => {
-                        const orderCard = document.createElement('div');
-                        orderCard.className = 'bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800';
+                    container.innerHTML = '';
+                    
+                    if (this.kitchenOrders.length === 0) {
+                        noOrdersMessage.classList.remove('hidden');
+                    } else {
+                        noOrdersMessage.classList.add('hidden');
                         
-                        let itemsHtml = '';
-                        order.items.forEach(item => {
-                            itemsHtml += `
-                                <div class="flex justify-between mb-1">
-                                    <span>${item.quantity}x ${item.name}</span>
-                                    <span>$${item.total.toFixed(2)}</span>
+                        this.kitchenOrders.forEach(order => {
+                            const orderCard = document.createElement('div');
+                            orderCard.className = 'bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800';
+                            
+                            let itemsHtml = '';
+                            order.items.forEach(item => {
+                                itemsHtml += `
+                                    <div class="flex justify-between mb-1">
+                                        <span>${item.quantity}x ${item.displayName || item.name}</span>
+                                        <span>$${item.total.toFixed(2)}</span>
+                                    </div>
+                                `;
+                            });
+                            
+                            const orderType = order.takeaway ? 
+                                '<span class="inline-block bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold">TAKEAWAY</span>' :
+                                '<span class="inline-block bg-green-500 text-white px-2 py-1 rounded text-xs font-bold">DINE IN</span>';
+                            
+                            const notes = order.notes ? 
+                                `<div class="mt-2 p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded border-l-4 border-yellow-500">
+                                    <strong>Notes:</strong> ${order.notes}
+                                </div>` : '';
+                            
+                            orderCard.innerHTML = `
+                                <div class="flex justify-between items-center mb-3">
+                                    <h3 class="font-bold text-lg">#${order.id}</h3>
+                                    <div class="flex flex-col items-end">
+                                        ${orderType}
+                                        <span class="text-sm text-gray-600 dark:text-gray-400 mt-1">${this.formatDateTime(order.timestamp)}</span>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    ${itemsHtml}
+                                </div>
+                                ${notes}
+                                <div class="border-t dark:border-red-800 pt-2 mb-3">
+                                    <div class="flex justify-between font-bold">
+                                        <span>Total:</span>
+                                        <span>$${order.total.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="complete-order-btn flex-grow bg-kitchen text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition" data-id="${order.id}">
+                                        <i class="fas fa-check mr-1"></i> Complete
+                                    </button>
                                 </div>
                             `;
+                            
+                            container.appendChild(orderCard);
                         });
-                        
-                        orderCard.innerHTML = `
-                            <div class="flex justify-between items-center mb-3">
-                                <h3 class="font-bold text-lg">${order.id}</h3>
-                                <span class="text-sm text-gray-600 dark:text-gray-400">${this.formatDateTime(order.timestamp)}</span>
-                            </div>
-                            <div class="mb-4">
-                                ${itemsHtml}
-                            </div>
-                            <div class="border-t dark:border-red-800 pt-2 mb-3">
-                                <div class="flex justify-between font-bold">
-                                    <span>Total:</span>
-                                    <span>$${order.total.toFixed(2)}</span>
-                                </div>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button class="edit-kitchen-order-btn flex-grow bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition" data-id="${order.id}">
-                                    <i class="fas fa-edit mr-1"></i> Edit
-                                </button>
-                                <button class="complete-order-btn flex-grow bg-kitchen text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition" data-id="${order.id}">
-                                    <i class="fas fa-check mr-1"></i> Complete
-                                </button>
-                            </div>
-                        `;
-                        
-                        container.appendChild(orderCard);
-                    });
+                    }
+                } catch (e) {
+                    errorLogger.logError("Render Kitchen Orders Error", { error: e.message, stack: e.stack });
                 }
             },
             
             renderOrderHistory() {
-                const container = document.getElementById('history-items');
-                const noHistoryMessage = document.getElementById('no-history');
-                
-                container.innerHTML = '';
-                
-                if (this.orderHistory.length === 0) {
-                    noHistoryMessage.classList.remove('hidden');
-                } else {
-                    noHistoryMessage.classList.add('hidden');
+                try {
+                    const container = document.getElementById('history-items');
+                    const noHistoryMessage = document.getElementById('no-history');
                     
-                    this.orderHistory.forEach(order => {
-                        const row = document.createElement('tr');
+                    container.innerHTML = '';
+                    
+                    if (this.orderHistory.length === 0) {
+                        noHistoryMessage.classList.remove('hidden');
+                    } else {
+                        noHistoryMessage.classList.add('hidden');
                         
-                        // Format items list
-                        const itemsList = order.items.map(item => 
-                            `${item.quantity}x ${item.name}`
-                        ).join(', ');
-                        
-                        row.innerHTML = `
-                            <td class="py-3">${order.id}</td>
-                            <td class="py-3">${this.formatDateTime(order.timestamp)}</td>
-                            <td class="py-3">${itemsList}</td>
-                            <td class="py-3 text-right font-semibold">$${order.total.toFixed(2)}</td>
-                            <td class="py-3 text-right">
-                                <button class="edit-history-order-btn bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 transition" data-id="${order.id}">
-                                    <i class="fas fa-edit"></i> Edit
-                                </button>
-                            </td>
-                        `;
-                        
-                        container.appendChild(row);
-                    });
+                        this.orderHistory.forEach(order => {
+                            const row = document.createElement('tr');
+                            
+                            const itemsList = order.items.map(item => 
+                                `${item.quantity}x ${item.displayName || item.name}`
+                            ).join(', ');
+                            
+                            const orderType = order.takeaway ? 
+                                '<span class="inline-block bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold">TAKEAWAY</span>' :
+                                '<span class="inline-block bg-green-500 text-white px-2 py-1 rounded text-xs font-bold">DINE IN</span>';
+                            
+                            const notes = order.notes || '';
+                            
+                            row.innerHTML = `
+                                <td class="py-3">#${order.id}</td>
+                                <td class="py-3">${this.formatDateTime(order.timestamp)}</td>
+                                <td class="py-3">${orderType}</td>
+                                <td class="py-3">${itemsList}</td>
+                                <td class="py-3 max-w-xs truncate" title="${notes}">${notes}</td>
+                                <td class="py-3 text-right font-semibold">$${order.total.toFixed(2)}</td>
+                                <td class="py-3 text-right">
+                                    <button class="bg-gray-500 text-white px-2 py-1 rounded-md hover:bg-gray-600 transition text-sm">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            `;
+                            
+                            container.appendChild(row);
+                        });
+                    }
+                    
+                    this.updateHistoryTotalSales();
+                } catch (e) {
+                    errorLogger.logError("Render Order History Error", { error: e.message, stack: e.stack });
                 }
-                
-                // Update the total sales amount
-                this.updateHistoryTotalSales();
             },
             
             // Event Listeners
             setupEventListeners() {
-                // Online/Offline Event Listeners with better error handling
-                window.addEventListener('online', () => {
-                    console.log("Browser detected online status");
-                    if (!this.isOnline) {
-                        this.attemptReconnect();
-                    }
-                });
-                
-                window.addEventListener('offline', () => {
-                    console.log("Browser detected offline status");
-                    this.updateConnectionStatus(false, new Error("Network connection lost"));
-                });
-                
-                // Tab Navigation
-                document.getElementById('tab-new-order').addEventListener('click', () => this.showTab('new-order-tab'));
-                document.getElementById('tab-kitchen').addEventListener('click', () => this.showTab('kitchen-tab'));
-                document.getElementById('tab-history').addEventListener('click', () => this.showTab('history-tab'));
-                document.getElementById('tab-config').addEventListener('click', () => this.showTab('config-tab'));
-                document.getElementById('tab-summary').addEventListener('click', () => this.showTab('summary-tab'));
-                
-                // Menu Items - event delegation for all category containers
-                document.getElementById('food-items').addEventListener('click', (e) => {
-                    const button = e.target.closest('button');
-                    if (button) {
-                        this.addItemToOrder(button.dataset.id);
-                    }
-                });
-                
-                document.getElementById('beverage-items').addEventListener('click', (e) => {
-                    const button = e.target.closest('button');
-                    if (button) {
-                        this.addItemToOrder(button.dataset.id);
-                    }
-                });
-                
-                document.getElementById('dessert-items').addEventListener('click', (e) => {
-                    const button = e.target.closest('button');
-                    if (button) {
-                        this.addItemToOrder(button.dataset.id);
-                    }
-                });
-                
-                // Order Items
-                document.getElementById('order-items').addEventListener('click', (e) => {
-                    if (e.target.closest('.remove-item-btn')) {
-                        const button = e.target.closest('.remove-item-btn');
-                        this.removeItemFromOrder(button.dataset.id);
-                    }
-                });
-                
-                // Discount
-                document.getElementById('apply-discount').addEventListener('click', () => this.applyDiscount());
-                
-                // Amount Received
-                document.getElementById('amount-received').addEventListener('input', (e) => {
-                    const amount = parseFloat(e.target.value);
-                    if (!isNaN(amount)) {
-                        this.calculateChange(amount);
-                    } else {
-                        document.getElementById('change').value = '';
-                    }
-                });
-                
-                // Order Actions
-                document.getElementById('clear-order').addEventListener('click', () => this.clearOrder());
-                document.getElementById('confirm-order').addEventListener('click', () => this.confirmOrder());
-                
-                // Menu Configuration
-                document.getElementById('add-item').addEventListener('click', () => {
-                    const nameInput = document.getElementById('item-name');
-                    const priceInput = document.getElementById('item-price');
-                    const categorySelect = document.getElementById('item-category');
+                try {
+                    // Error logs
+                    document.getElementById('clear-logs').addEventListener('click', () => {
+                        errorLogger.clearLogs();
+                        notifications.success('✅ Error logs cleared');
+                    });
                     
-                    const name = nameInput.value.trim();
-                    const price = parseFloat(priceInput.value);
-                    const category = categorySelect.value;
-                    
-                    if (name && !isNaN(price) && price > 0) {
-                        this.addMenuItem(name, price, category);
-                        nameInput.value = '';
-                        priceInput.value = '';
-                    } else {
-                        const statusEl = document.getElementById('connection-status');
-                        const statusTextEl = document.getElementById('status-text');
-                        statusTextEl.textContent = 'Please enter a valid name and price';
-                        statusEl.classList.remove('status-online');
-                        statusEl.classList.add('status-offline');
-                        
-                        // Reset after 3 seconds
-                        setTimeout(() => {
-                            this.updateConnectionStatus(this.isOnline);
-                        }, 3000);
-                    }
-                });
-                
-                // Menu Config Items
-                document.getElementById('menu-config-items').addEventListener('click', (e) => {
-                    // Edit Item
-                    if (e.target.closest('.edit-item-btn')) {
-                        const button = e.target.closest('.edit-item-btn');
-                        const id = button.dataset.id;
-                        const item = this.menuItems.find(item => item.id === id);
-                        
-                        if (item) {
-                            document.getElementById('edit-item-id').value = item.id;
-                            document.getElementById('edit-item-name').value = item.name;
-                            document.getElementById('edit-item-price').value = item.price;
-                            document.getElementById('edit-item-category').value = item.category || 'food';
-                            document.getElementById('edit-modal').classList.remove('hidden');
+                    document.getElementById('export-logs').addEventListener('click', () => {
+                        errorLogger.exportLogs();
+                        notifications.success('✅ Error logs exported');
+                    });
+
+                    // Online/Offline Event Listeners
+                    window.addEventListener('online', () => {
+                        console.log("Browser detected online status");
+                        if (!this.isOnline) {
+                            this.attemptReconnect();
                         }
-                    }
+                    });
                     
-                    // Delete Item
-                    if (e.target.closest('.delete-item-btn')) {
-                        const button = e.target.closest('.delete-item-btn');
-                        // Instead of confirm, show a message in the status area
-                        this.deleteMenuItem(button.dataset.id);
-                        const statusEl = document.getElementById('connection-status');
-                        const statusTextEl = document.getElementById('status-text');
-                        statusTextEl.textContent = 'Item deleted successfully';
-                        statusEl.classList.remove('status-offline');
-                        statusEl.classList.add('status-online');
+                    window.addEventListener('offline', () => {
+                        console.log("Browser detected offline status");
+                        this.updateConnectionStatus(false, new Error("Network connection lost"));
+                    });
+                    
+                    // Tab Navigation
+                    document.getElementById('tab-new-order').addEventListener('click', () => this.showTab('new-order-tab'));
+                    document.getElementById('tab-kitchen').addEventListener('click', () => this.showTab('kitchen-tab'));
+                    document.getElementById('tab-history').addEventListener('click', () => this.showTab('history-tab'));
+                    document.getElementById('tab-config').addEventListener('click', () => this.showTab('config-tab'));
+                    document.getElementById('tab-summary').addEventListener('click', () => this.showTab('summary-tab'));
+                    document.getElementById('tab-logs').addEventListener('click', () => this.showTab('logs-tab'));
+                    
+                    // Takeaway toggle
+                    document.getElementById('takeaway-toggle').addEventListener('change', (e) => {
+                        const label = document.getElementById('takeaway-label');
+                        this.currentOrder.takeaway = e.target.checked;
+                        label.textContent = e.target.checked ? 'Takeaway' : 'Dine In';
+                    });
+                    
+                    // Zero sugar modal
+                    document.getElementById('zero-sugar-yes').addEventListener('click', () => {
+                        if (this.pendingBeverageItem) {
+                            this.addItemToOrder(this.pendingBeverageItem.id, true);
+                            this.pendingBeverageItem = null;
+                            document.getElementById('zero-sugar-modal').classList.add('hidden');
+                        }
+                    });
+                    
+                    document.getElementById('zero-sugar-no').addEventListener('click', () => {
+                        if (this.pendingBeverageItem) {
+                            this.addItemToOrder(this.pendingBeverageItem.id, false);
+                            this.pendingBeverageItem = null;
+                            document.getElementById('zero-sugar-modal').classList.add('hidden');
+                        }
+                    });
+                    
+                    // Menu Items - event delegation
+                    ['food-items', 'beverage-items', 'dessert-items'].forEach(containerId => {
+                        document.getElementById(containerId).addEventListener('click', (e) => {
+                            const button = e.target.closest('button');
+                            if (button) {
+                                const menuItem = this.menuItems.find(item => item.id === button.dataset.id);
+                                if (menuItem && menuItem.category === 'beverage') {
+                                    this.addItemToOrder(button.dataset.id, null); // null triggers modal
+                                } else {
+                                    this.addItemToOrder(button.dataset.id, false);
+                                }
+                            }
+                        });
+                    });
+                    
+                    // Order Items
+                    document.getElementById('order-items').addEventListener('click', (e) => {
+                        if (e.target.closest('.remove-item-btn')) {
+                            const button = e.target.closest('.remove-item-btn');
+                            const zeroSugar = button.dataset.zeroSugar === 'true';
+                            this.removeItemFromOrder(button.dataset.id, zeroSugar);
+                        }
+                    });
+                    
+                    // Discount
+                    document.getElementById('apply-discount').addEventListener('click', () => this.applyDiscount());
+                    
+                    // Amount Received
+                    document.getElementById('amount-received').addEventListener('input', (e) => {
+                        const amount = parseFloat(e.target.value);
+                        if (!isNaN(amount)) {
+                            this.calculateChange(amount);
+                        } else {
+                            document.getElementById('change').value = '';
+                        }
+                    });
+                    
+                    // Order Actions
+                    document.getElementById('clear-order').addEventListener('click', () => this.clearOrder());
+                    document.getElementById('confirm-order').addEventListener('click', () => this.confirmOrder());
+                    
+                    // Menu Configuration
+                    document.getElementById('add-item').addEventListener('click', () => {
+                        const nameInput = document.getElementById('item-name');
+                        const priceInput = document.getElementById('item-price');
+                        const categorySelect = document.getElementById('item-category');
+                        const availabilityInput = document.getElementById('item-availability');
                         
-                        // Reset after 3 seconds
-                        setTimeout(() => {
-                            this.updateConnectionStatus(this.isOnline);
-                        }, 3000);
-                    }
-                });
-                
-                // Edit Modal
-                document.getElementById('cancel-edit').addEventListener('click', () => {
-                    document.getElementById('edit-modal').classList.add('hidden');
-                });
-                
-                document.getElementById('save-edit').addEventListener('click', () => {
-                    const id = document.getElementById('edit-item-id').value;
-                    const name = document.getElementById('edit-item-name').value.trim();
-                    const price = parseFloat(document.getElementById('edit-item-price').value);
-                    const category = document.getElementById('edit-item-category').value;
+                        const name = nameInput.value.trim();
+                        const price = parseFloat(priceInput.value);
+                        const category = categorySelect.value;
+                        const availability = parseInt(availabilityInput.value) || 0;
+                        
+                        if (name && !isNaN(price) && price > 0) {
+                            this.addMenuItem(name, price, category, availability);
+                            nameInput.value = '';
+                            priceInput.value = '';
+                            availabilityInput.value = '';
+                        } else {
+                            notifications.error('❌ Please enter a valid name and price');
+                        }
+                    });
                     
-                    if (name && !isNaN(price) && price > 0) {
-                        this.updateMenuItem(id, name, price, category);
+                    // Menu Config Items
+                    document.getElementById('menu-config-items').addEventListener('click', (e) => {
+                        if (e.target.closest('.edit-item-btn')) {
+                            const button = e.target.closest('.edit-item-btn');
+                            const id = button.dataset.id;
+                            const item = this.menuItems.find(item => item.id === id);
+                            
+                            if (item) {
+                                document.getElementById('edit-item-id').value = item.id;
+                                document.getElementById('edit-item-name').value = item.name;
+                                document.getElementById('edit-item-price').value = item.price;
+                                document.getElementById('edit-item-category').value = item.category || 'food';
+                                document.getElementById('edit-item-availability').value = item.availabilityGoal || '';
+                                document.getElementById('edit-modal').classList.remove('hidden');
+                            }
+                        }
+                        
+                        if (e.target.closest('.delete-item-btn')) {
+                            const button = e.target.closest('.delete-item-btn');
+                            this.deleteMenuItem(button.dataset.id);
+                        }
+                    });
+                    
+                    // Edit Modal
+                    document.getElementById('cancel-edit').addEventListener('click', () => {
                         document.getElementById('edit-modal').classList.add('hidden');
-                    } else {
-                        const statusEl = document.getElementById('connection-status');
-                        const statusTextEl = document.getElementById('status-text');
-                        statusTextEl.textContent = 'Please enter a valid name and price';
-                        statusEl.classList.remove('status-online');
-                        statusEl.classList.add('status-offline');
+                    });
+                    
+                    document.getElementById('save-edit').addEventListener('click', () => {
+                        const id = document.getElementById('edit-item-id').value;
+                        const name = document.getElementById('edit-item-name').value.trim();
+                        const price = parseFloat(document.getElementById('edit-item-price').value);
+                        const category = document.getElementById('edit-item-category').value;
+                        const availability = parseInt(document.getElementById('edit-item-availability').value) || 0;
                         
-                        // Reset after 3 seconds
-                        setTimeout(() => {
-                            this.updateConnectionStatus(this.isOnline);
-                        }, 3000);
-                    }
-                });
-                
-                // Kitchen Orders
-                document.getElementById('kitchen-orders').addEventListener('click', (e) => {
-                    if (e.target.closest('.complete-order-btn')) {
-                        const button = e.target.closest('.complete-order-btn');
-                        this.completeOrder(button.dataset.id);
-                    }
+                        if (name && !isNaN(price) && price > 0) {
+                            this.updateMenuItem(id, name, price, category, availability);
+                            document.getElementById('edit-modal').classList.add('hidden');
+                        } else {
+                            notifications.error('❌ Please enter a valid name and price');
+                        }
+                    });
                     
-                    if (e.target.closest('.edit-kitchen-order-btn')) {
-                        const button = e.target.closest('.edit-kitchen-order-btn');
-                        this.editKitchenOrder(button.dataset.id);
-                    }
-                });
-                
-                // Order History
-                document.getElementById('history-items').addEventListener('click', (e) => {
-                    if (e.target.closest('.edit-history-order-btn')) {
-                        const button = e.target.closest('.edit-history-order-btn');
-                        this.editHistoryOrder(button.dataset.id);
-                    }
-                });
-                
-                // Order Edit Modal
-                document.getElementById('edit-order-modal').addEventListener('click', (e) => {
-                    // Handle quantity changes
-                    if (e.target.closest('.edit-qty-plus')) {
-                        const button = e.target.closest('.edit-qty-plus');
-                        this.handleEditOrderQtyChange(button.dataset.id, 'add');
-                    }
+                    // Kitchen Orders
+                    document.getElementById('kitchen-orders').addEventListener('click', (e) => {
+                        if (e.target.closest('.complete-order-btn')) {
+                            const button = e.target.closest('.complete-order-btn');
+                            this.completeOrder(button.dataset.id);
+                        }
+                    });
                     
-                    if (e.target.closest('.edit-qty-minus')) {
-                        const button = e.target.closest('.edit-qty-minus');
-                        this.handleEditOrderQtyChange(button.dataset.id, 'subtract');
-                    }
-                    
-                    if (e.target.closest('.edit-remove-item')) {
-                        const button = e.target.closest('.edit-remove-item');
-                        this.handleEditOrderQtyChange(button.dataset.id, 'remove');
-                    }
-                });
-                
-                document.getElementById('edit-discount-percent').addEventListener('input', () => {
-                    const orderId = document.getElementById('edit-order-id').value;
-                    const orderType = document.getElementById('edit-order-type').value;
-                    const discountPercent = parseFloat(document.getElementById('edit-discount-percent').value);
-                    
-                    // Find the order
-                    let orders = orderType === 'kitchen' ? this.kitchenOrders : this.orderHistory;
-                    const orderIndex = orders.findIndex(order => order.id === orderId);
-                    
-                    if (orderIndex !== -1 && !isNaN(discountPercent) && discountPercent >= 0 && discountPercent <= 100) {
-                        orders[orderIndex].discountPercent = discountPercent;
-                        orders[orderIndex].discount = orders[orderIndex].subtotal * (discountPercent / 100);
-                        orders[orderIndex].total = orders[orderIndex].subtotal - orders[orderIndex].discount;
-                        
-                        // Update display
-                        document.getElementById('edit-discount').textContent = '$' + orders[orderIndex].discount.toFixed(2);
-                        document.getElementById('edit-total').textContent = '$' + orders[orderIndex].total.toFixed(2);
-                    }
-                });
-                
-                document.getElementById('cancel-edit-order').addEventListener('click', () => {
-                    document.getElementById('edit-order-modal').classList.add('hidden');
-                });
-                
-                document.getElementById('save-edit-order').addEventListener('click', () => {
-                    this.saveEditedOrder();
-                });
-                
-                // CSV Export
-                document.getElementById('export-csv').addEventListener('click', () => {
-                    this.downloadCSV();
-                });
+                    // CSV Export
+                    document.getElementById('export-csv').addEventListener('click', () => {
+                        this.downloadCSV();
+                    });
+                } catch (e) {
+                    errorLogger.logError("Setup Event Listeners Error", { error: e.message, stack: e.stack });
+                }
             },
             
             showTab(tabId) {
-                // Hide all tab contents
-                document.querySelectorAll('.tab-content').forEach(tab => {
-                    tab.classList.add('hidden');
-                });
-                
-                // Show selected tab
-                document.getElementById(tabId).classList.remove('hidden');
-                
-                // Update active tab button
-                document.querySelectorAll('[id^="tab-"]').forEach(btn => {
-                    btn.classList.remove('ring-2', 'ring-white', 'ring-opacity-60');
-                });
-                
-                // Get button id based on tabId (remove "-tab" suffix)
-                const buttonId = 'tab-' + tabId.replace('-tab', '');
-                document.getElementById(buttonId).classList.add('ring-2', 'ring-white', 'ring-opacity-60');
+                try {
+                    document.querySelectorAll('.tab-content').forEach(tab => {
+                        tab.classList.add('hidden');
+                    });
+                    
+                    document.getElementById(tabId).classList.remove('hidden');
+                    
+                    document.querySelectorAll('[id^="tab-"]').forEach(btn => {
+                        btn.classList.remove('ring-2', 'ring-white', 'ring-opacity-60');
+                    });
+                    
+                    const buttonId = 'tab-' + tabId.replace('-tab', '');
+                    document.getElementById(buttonId).classList.add('ring-2', 'ring-white', 'ring-opacity-60');
+                } catch (e) {
+                    errorLogger.logError("Show Tab Error", { error: e.message, stack: e.stack, tabId });
+                }
             }
         };
         
         // Initialize the app when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            POS.init();
-            
-            // Listen for authentication state changes
-            firebase.auth().onAuthStateChanged((user) => {
-                const statusEl = document.getElementById('connection-status');
-                const statusTextEl = document.getElementById('status-text');
+            try {
+                POS.init();
+                
+                // Listen for authentication state changes
+                firebase.auth().onAuthStateChanged((user) => {
+                    const statusEl = document.getElementById('connection-status');
+                    const statusTextEl = document.getElementById('status-text');
 
-                if (user) {
-                    // User is signed in
-                    statusTextEl.textContent = '✅ Logged in as ' + user.email;
-                    statusEl.classList.remove('status-offline');
-                    statusEl.classList.add('status-online');
-                    document.getElementById('auth-section').classList.add('hidden');
-                    document.getElementById('logout-section').classList.remove('hidden');
-                    document.getElementById('app-section').classList.remove('hidden');
-                    document.getElementById('user-email').textContent = user.email;
-                    
-                    // Ensure Firebase is initialized and listeners are setup
-                    if (!firebaseInitialized) {
-                        initializeFirebase();
+                    if (user) {
+                        statusTextEl.textContent = '✅ Online';
+                        statusEl.classList.remove('status-offline');
+                        statusEl.classList.add('status-online');
+                        document.getElementById('auth-section').classList.add('hidden');
+                        document.getElementById('logout-section').classList.remove('hidden');
+                        document.getElementById('app-section').classList.remove('hidden');
+                        document.getElementById('user-email').textContent = user.email;
+                        
+                        if (!firebaseInitialized) {
+                            initializeFirebase();
+                        }
+                        POS.setupFirebaseListeners();
+                    } else {
+                        statusTextEl.textContent = '❌ Offline';
+                        statusEl.classList.remove('status-online');
+                        statusEl.classList.add('status-offline');
+
+                        document.getElementById('auth-section').classList.remove('hidden');
+                        document.getElementById('logout-section').classList.add('hidden');
+                        document.getElementById('app-section').classList.add('hidden');
                     }
-                    POS.setupFirebaseListeners();
-                } else {
-                    // User is signed out
-                    statusTextEl.textContent = '❌ Not logged in';
-                    statusEl.classList.remove('status-online');
-                    statusEl.classList.add('status-offline');
-
-                    // Show login again
-                    document.getElementById('auth-section').classList.remove('hidden');
-                    document.getElementById('logout-section').classList.add('hidden');
-                    document.getElementById('app-section').classList.add('hidden');
-                }
-            });
+                });
+            } catch (e) {
+                errorLogger.logError("DOM Content Loaded Error", { error: e.message, stack: e.stack });
+            }
         });
 
         // Authentication handling
         function login() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
+            try {
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value.trim();
 
-            // Show spinner and disable button
-            document.getElementById('login-button').disabled = true;
-            document.getElementById('login-spinner').classList.remove('hidden');
-            document.getElementById('login-button-text').textContent = 'Logging in...';
+                document.getElementById('login-button').disabled = true;
+                document.getElementById('login-spinner').classList.remove('hidden');
+                document.getElementById('login-button-text').textContent = 'Logging in...';
 
-            firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-                .then(() => {
-                    return firebase.auth().signInWithEmailAndPassword(email, password);
-                })
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    document.getElementById('auth-section').classList.add('hidden');
-                    document.getElementById('logout-section').classList.remove('hidden');
-                    document.getElementById('app-section').classList.remove('hidden');
-                    document.getElementById('user-email').textContent = user.email;
-                    POS.updateConnectionStatus(true);
-                })
-                .catch((error) => {
-                    const statusEl = document.getElementById('connection-status');
-                    const statusTextEl = document.getElementById('status-text');
-                    statusTextEl.textContent = 'Login failed: ' + error.message;
-                    statusEl.classList.remove('status-online');
-                    statusEl.classList.add('status-offline');
-                })
-                .finally(() => {
-                    // Hide spinner and re-enable button
-                    document.getElementById('login-button').disabled = false;
-                    document.getElementById('login-spinner').classList.add('hidden');
-                    document.getElementById('login-button-text').textContent = 'Login';
-                });
+                firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                    .then(() => {
+                        return firebase.auth().signInWithEmailAndPassword(email, password);
+                    })
+                    .then((userCredential) => {
+                        const user = userCredential.user;
+                        document.getElementById('auth-section').classList.add('hidden');
+                        document.getElementById('logout-section').classList.remove('hidden');
+                        document.getElementById('app-section').classList.remove('hidden');
+                        document.getElementById('user-email').textContent = user.email;
+                        POS.updateConnectionStatus(true);
+                        notifications.success('✅ Logged in successfully');
+                    })
+                    .catch((error) => {
+                        errorLogger.logError("Login Error", { error: error.message, email });
+                        notifications.error(`❌ Login failed: ${error.message}`);
+                    })
+                    .finally(() => {
+                        document.getElementById('login-button').disabled = false;
+                        document.getElementById('login-spinner').classList.add('hidden');
+                        document.getElementById('login-button-text').textContent = 'Login';
+                    });
+            } catch (e) {
+                errorLogger.logError("Login Function Error", { error: e.message, stack: e.stack });
+                notifications.error(`❌ Login error: ${e.message}`);
+            }
         }
 
         function logout() {
-            firebase.auth().signOut()
-                .then(() => {
-                    console.log("✅ Logged out.");
-                    const statusEl = document.getElementById('connection-status');
-                    const statusTextEl = document.getElementById('status-text');
-                    statusTextEl.textContent = 'Logged out successfully';
-                    statusEl.classList.remove('status-online');
-                    statusEl.classList.add('status-offline');
-                })
-                .catch(error => {
-                    console.error("🚨 Logout error:", error);
-                });
+            try {
+                firebase.auth().signOut()
+                    .then(() => {
+                        console.log("✅ Logged out.");
+                        notifications.success('✅ Logged out successfully');
+                    })
+                    .catch(error => {
+                        errorLogger.logError("Logout Error", { error: error.message });
+                        notifications.error(`❌ Logout failed: ${error.message}`);
+                    });
+            } catch (e) {
+                errorLogger.logError("Logout Function Error", { error: e.message, stack: e.stack });
+                notifications.error(`❌ Logout error: ${e.message}`);
+            }
         }
     </script>
 </body>
