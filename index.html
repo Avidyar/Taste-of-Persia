@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Persiche Ecke POS</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏺</text></svg>">
+    
     <!-- Firebase App (core) - SIMPLE VERSION WITH NO APP CHECK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
@@ -12,7 +15,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -33,8 +36,8 @@
                         }
                     },
                     fontFamily: {
-                        'persian': ['Cinzel', 'serif'],
-                        'body': ['Crimson Text', 'serif']
+                        'pos': ['Inter', 'system-ui', 'sans-serif'],
+                        'display': ['Roboto', 'system-ui', 'sans-serif']
                     }
                 }
             },
@@ -78,10 +81,10 @@
             @apply text-dessert border-dessert/30;
         }
         
-        /* Connection status badge */
+        /* Connection status badge - moved lower */
         #connection-status {
             position: fixed;
-            bottom: 80px;
+            bottom: 20px;
             right: 20px;
             padding: 8px 16px;
             border-radius: 25px;
@@ -115,7 +118,7 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Fantasy header styles */
+        /* Fantasy header styles - doubled height */
         .fantasy-header {
             background: linear-gradient(rgba(44, 24, 16, 0.8), rgba(139, 0, 0, 0.9)), url('https://i.postimg.cc/htD8j8Kk/photo-2025-06-22-20-24-58.jpg');
             background-size: cover;
@@ -123,6 +126,7 @@
             background-attachment: fixed;
             position: relative;
             overflow: hidden;
+            min-height: 300px; /* Doubled from 150px */
         }
         
         .fantasy-header::before {
@@ -138,7 +142,7 @@
         
         .fantasy-text {
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(212, 175, 55, 0.3);
-            font-family: 'Cinzel', serif;
+            font-family: 'Inter', serif;
             letter-spacing: 2px;
         }
         
@@ -196,11 +200,41 @@
             font-family: 'Courier New', monospace;
             font-size: 12px;
         }
+
+        /* Enhanced POS font styling */
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .pos-text {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-weight: 500;
+        }
+
+        .pos-header {
+            font-family: 'Roboto', system-ui, sans-serif;
+            font-weight: 700;
+        }
+
+        /* Logout section in header */
+        .header-logout {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 25px;
+            color: white;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
     </style>
 </head>
-<body class="bg-gradient-to-b from-yellow-50 via-white to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-800 dark:text-gray-200 font-body">
+<body class="bg-gradient-to-b from-yellow-50 via-white to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-800 dark:text-gray-200 font-pos">
     
-    <!-- Connection Status Indicator -->
+    <!-- Connection Status Indicator - Moved Lower -->
     <div id="connection-status" class="status-offline">
         <span id="status-text">Offline</span>
         <button id="retry-connection" class="ml-2 bg-white bg-opacity-20 px-2 py-1 rounded text-sm">
@@ -213,36 +247,39 @@
 
     <!-- Authentication Section -->
     <div id="auth-section" class="max-w-sm mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg mt-10">
-        <h2 class="text-xl font-semibold mb-4 text-center font-persian">Login</h2>
-        <input type="email" id="email" placeholder="Email" class="w-full p-2 mb-3 border dark:border-gray-600 rounded-lg dark:bg-gray-700 text-base">
-        <input type="password" id="password" placeholder="Password" class="w-full p-2 mb-3 border dark:border-gray-600 rounded-lg dark:bg-gray-700 text-base">
-        <button id="login-button" onclick="login()" class="w-full bg-primary text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
+        <h2 class="text-xl font-semibold mb-4 text-center pos-header">Login</h2>
+        <input type="email" id="email" placeholder="Email" class="w-full p-3 mb-3 border dark:border-gray-600 rounded-lg dark:bg-gray-700 text-base pos-text">
+        <input type="password" id="password" placeholder="Password" class="w-full p-3 mb-3 border dark:border-gray-600 rounded-lg dark:bg-gray-700 text-base pos-text">
+        <button id="login-button" onclick="login()" class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition pos-text">
             <span id="login-button-text">Login</span>
             <span id="login-spinner" class="loading-spinner ml-2 hidden"></span>
         </button>
-    </div>
-    
-    <div id="logout-section" class="hidden max-w-sm mx-auto p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg mt-10 text-center">
-        <p class="mb-3">Logged in as <span id="user-email" class="font-semibold"></span></p>
-        <button onclick="logout()" class="bg-red-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-red-600 transition">Logout</button>
     </div>
     
     <!-- Main Application Section - Initially hidden -->
     <div id="app-section" class="hidden">
         <div class="container mx-auto px-4 py-8">
 
-            <!-- Fantasy Header -->
+            <!-- Fantasy Header with Logout -->
             <header class="mb-8 fantasy-header p-12 rounded-xl shadow-2xl text-center relative">
                 <div class="persian-ornament">✦</div>
                 <div class="persian-ornament">❋</div>
                 <div class="persian-ornament">✧</div>
                 <div class="persian-ornament">◆</div>
                 
-                <div class="relative z-10">
-                    <h1 class="text-6xl font-bold text-white fantasy-text mb-2">
+                <!-- Logout Section in Header -->
+                <div id="logout-section" class="header-logout hidden">
+                    <span>Logged in as <span id="user-email" class="font-semibold"></span></span>
+                    <button onclick="logout()" class="ml-3 bg-red-500 text-white py-1 px-3 rounded-lg font-semibold hover:bg-red-600 transition text-sm">
+                        Logout
+                    </button>
+                </div>
+                
+                <div class="relative z-10 flex flex-col justify-center h-full">
+                    <h1 class="text-6xl font-bold text-white fantasy-text mb-2 pos-header">
                         Taste of Persia
                     </h1>
-                    <p class="text-xl text-persian-gold font-persian italic">
+                    <p class="text-xl text-persian-gold pos-text italic">
                         Where Ancient Flavors Meet Modern Excellence
                     </p>
                     <div class="mt-4 flex justify-center space-x-4 text-persian-gold">
@@ -257,26 +294,26 @@
 
             <!-- Tab Navigation -->
             <div class="flex flex-wrap mb-6 gap-2">
-                <button id="tab-new-order" class="px-4 py-3 rounded-lg bg-order text-white font-semibold flex-grow"><i class="fas fa-utensils mr-2"></i>New Order</button>
-                <button id="tab-kitchen" class="px-4 py-3 rounded-lg bg-kitchen text-white font-semibold flex-grow"><i class="fas fa-fire mr-2"></i>Kitchen Orders</button>
-                <button id="tab-history" class="px-4 py-3 rounded-lg bg-completed text-white font-semibold flex-grow"><i class="fas fa-history mr-2"></i>Order History</button>
-                <button id="tab-config" class="px-4 py-3 rounded-lg bg-config text-white font-semibold flex-grow"><i class="fas fa-cog mr-2"></i>Menu Config</button>
-                <button id="tab-summary" class="px-4 py-3 rounded-lg bg-yellow-600 text-white font-semibold flex-grow"><i class="fas fa-chart-bar mr-2"></i>Sales Summary</button>
-                <button id="tab-logs" class="px-4 py-3 rounded-lg bg-gray-600 text-white font-semibold flex-grow"><i class="fas fa-bug mr-2"></i>Error Logs</button>
+                <button id="tab-new-order" class="px-4 py-3 rounded-lg bg-order text-white font-semibold flex-grow pos-text"><i class="fas fa-utensils mr-2"></i>New Order</button>
+                <button id="tab-kitchen" class="px-4 py-3 rounded-lg bg-kitchen text-white font-semibold flex-grow pos-text"><i class="fas fa-fire mr-2"></i>Kitchen Orders</button>
+                <button id="tab-history" class="px-4 py-3 rounded-lg bg-completed text-white font-semibold flex-grow pos-text"><i class="fas fa-history mr-2"></i>Order History</button>
+                <button id="tab-config" class="px-4 py-3 rounded-lg bg-config text-white font-semibold flex-grow pos-text"><i class="fas fa-cog mr-2"></i>Menu Config</button>
+                <button id="tab-summary" class="px-4 py-3 rounded-lg bg-yellow-600 text-white font-semibold flex-grow pos-text"><i class="fas fa-chart-bar mr-2"></i>Sales Summary</button>
+                <button id="tab-logs" class="px-4 py-3 rounded-lg bg-gray-600 text-white font-semibold flex-grow pos-text"><i class="fas fa-bug mr-2"></i>Error Logs</button>
             </div>
             
             <!-- Error Logs Tab -->
             <div id="logs-tab" class="tab-content hidden">
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold text-gray-600">Error Logs</h2>
-                        <button id="clear-logs" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                        <h2 class="text-xl font-semibold text-gray-600 pos-header">Error Logs</h2>
+                        <button id="clear-logs" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition pos-text">
                             <i class="fas fa-trash mr-2"></i>Clear Logs
                         </button>
                     </div>
                     
                     <div class="mb-4">
-                        <button id="export-logs" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                        <button id="export-logs" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition pos-text">
                             <i class="fas fa-download mr-2"></i>Export Logs for AI
                         </button>
                     </div>
@@ -290,28 +327,33 @@
             <!-- Sales Summary Tab -->
             <div id="summary-tab" class="tab-content hidden">
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <h2 class="text-xl font-semibold mb-4 text-yellow-600">Sales Summary</h2>
+                    <h2 class="text-xl font-semibold mb-4 text-yellow-600 pos-header">Sales Summary</h2>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                         <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-                            <h3 class="text-lg font-medium mb-2">Total Orders</h3>
-                            <p id="total-orders-count" class="text-3xl font-bold">0</p>
+                            <h3 class="text-lg font-medium mb-2 pos-text">Total Orders</h3>
+                            <p id="total-orders-count" class="text-3xl font-bold pos-header">0</p>
                         </div>
                         
                         <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-                            <h3 class="text-lg font-medium mb-2">Total Revenue</h3>
-                            <p id="total-revenue" class="text-3xl font-bold">$0.00</p>
+                            <h3 class="text-lg font-medium mb-2 pos-text">Total Revenue</h3>
+                            <p id="total-revenue" class="text-3xl font-bold pos-header">€0.00</p>
                         </div>
                         
                         <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-                            <h3 class="text-lg font-medium mb-2">Average Order Value</h3>
-                            <p id="average-order-value" class="text-3xl font-bold">$0.00</p>
+                            <h3 class="text-lg font-medium mb-2 pos-text">Deposit Revenue</h3>
+                            <p id="deposit-revenue" class="text-3xl font-bold pos-header">€0.00</p>
+                        </div>
+                        
+                        <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-lg font-medium mb-2 pos-text">Average Order Value</h3>
+                            <p id="average-order-value" class="text-3xl font-bold pos-header">€0.00</p>
                         </div>
                     </div>
                     
                     <!-- Availability Goals Section -->
                     <div class="mb-8">
-                        <h3 class="text-lg font-medium mb-4">Availability Goals Progress</h3>
+                        <h3 class="text-lg font-medium mb-4 pos-header">Availability Goals Progress</h3>
                         <div id="availability-progress" class="space-y-4">
                             <!-- Progress bars will be dynamically inserted here -->
                         </div>
@@ -321,15 +363,15 @@
                     </div>
                     
                     <div class="mb-8">
-                        <h3 class="text-lg font-medium mb-4">Top Selling Items</h3>
+                        <h3 class="text-lg font-medium mb-4 pos-header">Top Selling Items</h3>
                         <div class="overflow-x-auto">
                             <table class="w-full">
                                 <thead>
                                     <tr class="border-b dark:border-gray-700">
-                                        <th class="text-left py-2">Item Name</th>
-                                        <th class="text-right py-2">Quantity Sold</th>
-                                        <th class="text-right py-2">Revenue</th>
-                                        <th class="text-right py-2">Goal Progress</th>
+                                        <th class="text-left py-2 pos-text">Item Name</th>
+                                        <th class="text-right py-2 pos-text">Quantity Sold</th>
+                                        <th class="text-right py-2 pos-text">Revenue</th>
+                                        <th class="text-right py-2 pos-text">Goal Progress</th>
                                     </tr>
                                 </thead>
                                 <tbody id="top-items" class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -343,8 +385,8 @@
                     </div>
                     
                     <div>
-                        <h3 class="text-lg font-medium mb-4">Data Export</h3>
-                        <button id="export-csv" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition">
+                        <h3 class="text-lg font-medium mb-4 pos-header">Data Export</h3>
+                        <button id="export-csv" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition pos-text">
                             <i class="fas fa-file-csv mr-2"></i> Export Sales Data (CSV)
                         </button>
                     </div>
@@ -353,66 +395,66 @@
 
             <!-- New Order Tab -->
             <div id="new-order-tab" class="tab-content">
-                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <!-- Menu Items -->
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <!-- Menu Items - Increased width -->
                     <div class="lg:col-span-3 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                        <h2 class="text-xl font-semibold mb-4 text-order">Menu Items</h2>
+                        <h2 class="text-xl font-semibold mb-4 text-order pos-header">Menu Items</h2>
                         
                         <div id="menu-items-container" class="overflow-y-auto max-h-[70vh] custom-scrollbar">
                             <!-- Food section -->
-                            <h3 class="category-heading food-heading"><i class="fas fa-utensils mr-2"></i>Food</h3>
-                            <div id="food-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+                            <h3 class="category-heading food-heading pos-text"><i class="fas fa-utensils mr-2"></i>Food</h3>
+                            <div id="food-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-4">
                                 <!-- Food items will be dynamically inserted here -->
                             </div>
                             
                             <!-- Beverage section -->
-                            <h3 class="category-heading beverage-heading"><i class="fas fa-coffee mr-2"></i>Beverages</h3>
-                            <div id="beverage-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+                            <h3 class="category-heading beverage-heading pos-text"><i class="fas fa-coffee mr-2"></i>Beverages</h3>
+                            <div id="beverage-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-4">
                                 <!-- Beverage items will be dynamically inserted here -->
                             </div>
                             
                             <!-- Dessert section -->
-                            <h3 class="category-heading dessert-heading"><i class="fas fa-ice-cream mr-2"></i>Desserts</h3>
-                            <div id="dessert-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                            <h3 class="category-heading dessert-heading pos-text"><i class="fas fa-ice-cream mr-2"></i>Desserts</h3>
+                            <div id="dessert-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                                 <!-- Dessert items will be dynamically inserted here -->
                             </div>
                         </div>
                     </div>
 
-                    <!-- Current Order -->
-                    <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                        <h2 class="text-xl font-semibold mb-4 text-order">Current Order</h2>
+                    <!-- Current Order - Reduced width -->
+                    <div class="lg:col-span-1 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold mb-4 text-order pos-header">Current Order</h2>
                         
                         <!-- Order Number and Takeaway Toggle -->
-                        <div class="mb-4 grid grid-cols-2 gap-4">
+                        <div class="mb-4 space-y-3">
                             <div>
-                                <label class="block mb-2 text-sm font-medium">Order Number:</label>
-                                <input type="text" id="order-number-display" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base font-bold text-center" readonly>
+                                <label class="block mb-1 text-sm font-medium pos-text">Order Number:</label>
+                                <input type="text" id="order-number-display" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base font-bold text-center pos-text" readonly>
                             </div>
                             <div>
-                                <label class="block mb-2 text-sm font-medium">Takeaway:</label>
+                                <label class="block mb-1 text-sm font-medium pos-text">Takeaway:</label>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" id="takeaway-toggle" class="sr-only peer">
                                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                    <span class="ml-3 text-sm font-medium" id="takeaway-label">Dine In</span>
+                                    <span class="ml-3 text-sm font-medium pos-text" id="takeaway-label">Dine In</span>
                                 </label>
                             </div>
                         </div>
                         
                         <!-- Order Notes -->
                         <div class="mb-4">
-                            <label for="order-notes" class="block mb-2 text-sm font-medium">Order Notes:</label>
-                            <textarea id="order-notes" rows="3" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base" placeholder="Special instructions, allergies, preferences..."></textarea>
+                            <label for="order-notes" class="block mb-1 text-sm font-medium pos-text">Order Notes:</label>
+                            <textarea id="order-notes" rows="2" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base pos-text" placeholder="Special instructions..."></textarea>
                         </div>
                         
-                        <div class="mb-4 max-h-[300px] overflow-y-auto custom-scrollbar">
-                            <table class="w-full">
+                        <div class="mb-4 max-h-[250px] overflow-y-auto custom-scrollbar">
+                            <table class="w-full text-sm">
                                 <thead>
                                     <tr class="border-b dark:border-gray-700">
-                                        <th class="text-left py-2">Item</th>
-                                        <th class="text-center py-2">Qty</th>
-                                        <th class="text-right py-2">Price</th>
-                                        <th class="text-right py-2">Action</th>
+                                        <th class="text-left py-2 pos-text">Item</th>
+                                        <th class="text-center py-2 pos-text">Qty</th>
+                                        <th class="text-right py-2 pos-text">Price</th>
+                                        <th class="text-right py-2 pos-text">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="order-items">
@@ -422,52 +464,57 @@
                         </div>
                         
                         <!-- Order Summary -->
-                        <div class="space-y-2 mb-4">
+                        <div class="space-y-2 mb-4 text-sm pos-text">
                             <div class="flex justify-between">
                                 <span>Subtotal:</span>
-                                <span id="subtotal" class="font-semibold">$0.00</span>
+                                <span id="subtotal" class="font-semibold">€0.00</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>Discount:</span>
-                                <span id="discount" class="font-semibold">$0.00</span>
+                                <span id="discount" class="font-semibold">€0.00</span>
                             </div>
-                            <div class="flex justify-between text-lg">
-                                <span>Total:</span>
-                                <span id="total" class="font-bold">$0.00</span>
+                            <div class="flex justify-between">
+                                <span>Deposit:</span>
+                                <span id="deposit-total" class="font-semibold">€0.00</span>
+                            </div>
+                            <div class="flex justify-between text-base border-t pt-2">
+                                <span class="font-bold">Total:</span>
+                                <span id="total" class="font-bold">€0.00</span>
                             </div>
                         </div>
 
                         <!-- Custom Discount Input -->
                         <div class="mb-4 grid grid-cols-3 gap-2">
                             <div class="col-span-1">
-                                <label for="discount-percent" class="block mb-1 text-sm">Discount %:</label>
-                                <input type="number" id="discount-percent" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base" min="0" max="100" value="10">
+                                <label for="discount-percent" class="block mb-1 text-xs pos-text">Discount %:</label>
+                                <input type="number" id="discount-percent" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base pos-text" min="0" max="100" value="10">
                             </div>
                             <div class="col-span-2">
-                                <label class="block mb-1 text-sm opacity-0">Apply</label>
-                                <button id="apply-discount" class="w-full bg-yellow-500 text-white py-2 rounded-lg font-semibold hover:bg-yellow-600 transition">
+                                <label class="block mb-1 text-xs opacity-0">Apply</label>
+                                <button id="apply-discount" class="w-full bg-yellow-500 text-white py-2 rounded-lg font-semibold hover:bg-yellow-600 transition text-sm pos-text">
                                     Apply Discount
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Payment Section -->
-                        <div class="mb-4">
-                            <label for="amount-received" class="block mb-2">Amount Received:</label>
-                            <input type="number" id="amount-received" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base" min="0" step="0.01">
-                        </div>
-                        
-                        <div class="mb-6">
-                            <label for="change" class="block mb-2">Change to Return:</label>
-                            <input type="text" id="change" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 bg-gray-100 dark:bg-gray-800" readonly>
+                        <!-- Payment Section - Side by Side -->
+                        <div class="mb-4 grid grid-cols-2 gap-2">
+                            <div>
+                                <label for="amount-received" class="block mb-1 text-sm pos-text">Amount Received:</label>
+                                <input type="number" id="amount-received" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base pos-text" min="0" step="0.01">
+                            </div>
+                            <div>
+                                <label for="change" class="block mb-1 text-sm pos-text">Change to Return:</label>
+                                <input type="text" id="change" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 bg-gray-100 dark:bg-gray-800 text-base pos-text" readonly>
+                            </div>
                         </div>
 
                         <!-- Order Actions -->
-                        <div class="grid grid-cols-2 gap-4">
-                            <button id="clear-order" class="bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 transition">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="clear-order" class="bg-gray-500 text-white py-2 rounded-lg font-semibold hover:bg-gray-600 transition text-sm pos-text">
                                 Clear Order
                             </button>
-                            <button id="confirm-order" class="bg-order text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                            <button id="confirm-order" class="bg-order text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition text-sm pos-text">
                                 Confirm Order
                             </button>
                         </div>
@@ -478,7 +525,7 @@
             <!-- Kitchen Orders Tab -->
             <div id="kitchen-tab" class="tab-content hidden">
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <h2 class="text-xl font-semibold mb-4 text-kitchen">Kitchen Orders</h2>
+                    <h2 class="text-xl font-semibold mb-4 text-kitchen pos-header">Kitchen Orders</h2>
                     <div id="kitchen-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <!-- Kitchen orders will be dynamically inserted here -->
                     </div>
@@ -491,13 +538,19 @@
             <!-- Order History Tab -->
             <div id="history-tab" class="tab-content hidden">
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <h2 class="text-xl font-semibold mb-4 text-completed">Order History</h2>
+                    <h2 class="text-xl font-semibold mb-4 text-completed pos-header">Order History</h2>
                     <div class="space-y-2 mb-6">
                         <div class="flex justify-between items-center">
-                            <h3 class="text-lg font-medium">Completed Orders</h3>
-                            <div class="flex items-center">
-                                <span class="mr-2">Total Sales:</span>
-                                <span id="history-total-sales" class="font-bold text-lg">$0.00</span>
+                            <h3 class="text-lg font-medium pos-text">Completed Orders</h3>
+                            <div class="flex items-center space-x-4">
+                                <div class="text-center">
+                                    <span class="text-sm pos-text">Total Sales:</span>
+                                    <span id="history-total-sales" class="font-bold text-lg pos-header block">€0.00</span>
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-sm pos-text">Deposit Revenue:</span>
+                                    <span id="history-deposit-revenue" class="font-bold text-lg pos-header block">€0.00</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -505,13 +558,13 @@
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b dark:border-gray-700">
-                                    <th class="text-left py-2">Order ID</th>
-                                    <th class="text-left py-2">Date & Time</th>
-                                    <th class="text-left py-2">Type</th>
-                                    <th class="text-left py-2">Items</th>
-                                    <th class="text-left py-2">Notes</th>
-                                    <th class="text-right py-2">Total</th>
-                                    <th class="text-right py-2">Actions</th>
+                                    <th class="text-left py-2 pos-text">Order ID</th>
+                                    <th class="text-left py-2 pos-text">Date & Time</th>
+                                    <th class="text-left py-2 pos-text">Type</th>
+                                    <th class="text-left py-2 pos-text">Items</th>
+                                    <th class="text-left py-2 pos-text">Notes</th>
+                                    <th class="text-right py-2 pos-text">Total</th>
+                                    <th class="text-right py-2 pos-text">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="history-items" class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -528,34 +581,34 @@
             <!-- Menu Configuration Tab -->
             <div id="config-tab" class="tab-content hidden">
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <h2 class="text-xl font-semibold mb-4 text-config">Menu Configuration</h2>
+                    <h2 class="text-xl font-semibold mb-4 text-config pos-header">Menu Configuration</h2>
                     
                     <!-- Add Menu Item Form -->
                     <div class="mb-8 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                        <h3 class="text-lg font-medium mb-4">Add New Menu Item</h3>
+                        <h3 class="text-lg font-medium mb-4 pos-header">Add New Menu Item</h3>
                         <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
                             <div class="md:col-span-2">
-                                <label for="item-name" class="block mb-2">Item Name:</label>
-                                <input type="text" id="item-name" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base" placeholder="e.g. Cheeseburger">
+                                <label for="item-name" class="block mb-2 pos-text">Item Name:</label>
+                                <input type="text" id="item-name" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base pos-text" placeholder="e.g. Cheeseburger">
                             </div>
                             <div>
-                                <label for="item-price" class="block mb-2">Price ($):</label>
-                                <input type="number" id="item-price" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base" min="0" step="0.01" placeholder="9.99">
+                                <label for="item-price" class="block mb-2 pos-text">Price (€):</label>
+                                <input type="number" id="item-price" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base pos-text" min="0" step="0.01" placeholder="9.99">
                             </div>
                             <div>
-                                <label for="item-category" class="block mb-2">Category:</label>
-                                <select id="item-category" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base">
+                                <label for="item-category" class="block mb-2 pos-text">Category:</label>
+                                <select id="item-category" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base pos-text">
                                     <option value="food">Food</option>
                                     <option value="beverage">Beverage</option>
                                     <option value="dessert">Dessert</option>
                                 </select>
                             </div>
                             <div>
-                                <label for="item-availability" class="block mb-2">Daily Goal:</label>
-                                <input type="number" id="item-availability" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base" min="0" placeholder="50">
+                                <label for="item-availability" class="block mb-2 pos-text">Daily Goal:</label>
+                                <input type="number" id="item-availability" class="w-full p-2 border dark:border-gray-600 rounded-lg dark:bg-gray-800 text-base pos-text" min="0" placeholder="50">
                             </div>
                             <div class="flex items-end">
-                                <button id="add-item" class="w-full bg-config text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition">
+                                <button id="add-item" class="w-full bg-config text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition pos-text">
                                     Add Item
                                 </button>
                             </div>
@@ -563,18 +616,18 @@
                     </div>
                     
                     <!-- Menu Items List -->
-                    <h3 class="text-lg font-medium mb-4">Current Menu Items</h3>
+                    <h3 class="text-lg font-medium mb-4 pos-header">Current Menu Items</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b dark:border-gray-700">
-                                    <th class="text-left py-2">Item Name</th>
-                                    <th class="text-left py-2">Category</th>
-                                    <th class="text-right py-2">Price</th>
-                                    <th class="text-right py-2">Daily Goal</th>
-                                    <th class="text-right py-2">Sold Today</th>
-                                    <th class="text-right py-2">Progress</th>
-                                    <th class="text-right py-2">Actions</th>
+                                    <th class="text-left py-2 pos-text">Item Name</th>
+                                    <th class="text-left py-2 pos-text">Category</th>
+                                    <th class="text-right py-2 pos-text">Price</th>
+                                    <th class="text-right py-2 pos-text">Daily Goal</th>
+                                    <th class="text-right py-2 pos-text">Sold Today</th>
+                                    <th class="text-right py-2 pos-text">Progress</th>
+                                    <th class="text-right py-2 pos-text">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="menu-config-items" class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -593,13 +646,13 @@
     <!-- Zero Sugar Modal -->
     <div id="zero-sugar-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-            <h3 class="text-lg font-semibold mb-4">Beverage Options</h3>
-            <p class="mb-4">Would you like this beverage with zero sugar?</p>
+            <h3 class="text-lg font-semibold mb-4 pos-header">Beverage Options</h3>
+            <p class="mb-4 pos-text">Would you like this beverage with zero sugar?</p>
             <div class="flex justify-end space-x-3">
-                <button id="zero-sugar-no" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                <button id="zero-sugar-no" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition pos-text">
                     Regular
                 </button>
-                <button id="zero-sugar-yes" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                <button id="zero-sugar-yes" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition pos-text">
                     Zero Sugar
                 </button>
             </div>
@@ -609,33 +662,33 @@
     <!-- Edit Menu Item Modal -->
     <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-            <h3 class="text-lg font-semibold mb-4">Edit Menu Item</h3>
+            <h3 class="text-lg font-semibold mb-4 pos-header">Edit Menu Item</h3>
             <input type="hidden" id="edit-item-id">
             <div class="mb-4">
-                <label for="edit-item-name" class="block mb-2">Item Name:</label>
-                <input type="text" id="edit-item-name" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base">
+                <label for="edit-item-name" class="block mb-2 pos-text">Item Name:</label>
+                <input type="text" id="edit-item-name" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base pos-text">
             </div>
             <div class="mb-4">
-                <label for="edit-item-price" class="block mb-2">Price ($):</label>
-                <input type="number" id="edit-item-price" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base" min="0" step="0.01">
+                <label for="edit-item-price" class="block mb-2 pos-text">Price (€):</label>
+                <input type="number" id="edit-item-price" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base pos-text" min="0" step="0.01">
             </div>
             <div class="mb-4">
-                <label for="edit-item-category" class="block mb-2">Category:</label>
-                <select id="edit-item-category" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base">
+                <label for="edit-item-category" class="block mb-2 pos-text">Category:</label>
+                <select id="edit-item-category" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base pos-text">
                     <option value="food">Food</option>
                     <option value="beverage">Beverage</option>
                     <option value="dessert">Dessert</option>
                 </select>
             </div>
             <div class="mb-4">
-                <label for="edit-item-availability" class="block mb-2">Daily Goal:</label>
-                <input type="number" id="edit-item-availability" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base" min="0">
+                <label for="edit-item-availability" class="block mb-2 pos-text">Daily Goal:</label>
+                <input type="number" id="edit-item-availability" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base pos-text" min="0">
             </div>
             <div class="flex justify-end space-x-3">
-                <button id="cancel-edit" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                <button id="cancel-edit" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition pos-text">
                     Cancel
                 </button>
-                <button id="save-edit" class="px-4 py-2 bg-config text-white rounded-lg hover:bg-purple-700 transition">
+                <button id="save-edit" class="px-4 py-2 bg-config text-white rounded-lg hover:bg-purple-700 transition pos-text">
                     Save Changes
                 </button>
             </div>
@@ -645,7 +698,7 @@
     <!-- Edit Order Modal -->
     <div id="edit-order-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-lg">
-            <h3 class="text-lg font-semibold mb-4">Edit Order</h3>
+            <h3 class="text-lg font-semibold mb-4 pos-header">Edit Order</h3>
             <input type="hidden" id="edit-order-id">
             <input type="hidden" id="edit-order-type">
             
@@ -653,10 +706,10 @@
                 <table class="w-full">
                     <thead>
                         <tr class="border-b dark:border-gray-700">
-                            <th class="text-left py-2">Item</th>
-                            <th class="text-center py-2">Qty</th>
-                            <th class="text-right py-2">Price</th>
-                            <th class="text-right py-2">Actions</th>
+                            <th class="text-left py-2 pos-text">Item</th>
+                            <th class="text-center py-2 pos-text">Qty</th>
+                            <th class="text-right py-2 pos-text">Price</th>
+                            <th class="text-right py-2 pos-text">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="edit-order-items">
@@ -665,34 +718,38 @@
                 </table>
             </div>
             
-            <div class="space-y-2 mb-4">
+            <div class="space-y-2 mb-4 pos-text">
                 <div class="flex justify-between">
                     <span>Subtotal:</span>
-                    <span id="edit-subtotal" class="font-semibold">$0.00</span>
+                    <span id="edit-subtotal" class="font-semibold">€0.00</span>
                 </div>
                 <div class="grid grid-cols-3 gap-2 items-center">
                     <div class="col-span-1">
                         <label for="edit-discount-percent" class="text-sm">Discount %:</label>
-                        <input type="number" id="edit-discount-percent" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base" min="0" max="100" value="0">
+                        <input type="number" id="edit-discount-percent" class="w-full p-2 border dark:border-gray-700 rounded-lg dark:bg-gray-700 text-base pos-text" min="0" max="100" value="0">
                     </div>
                     <div class="col-span-1 text-right">
                         <span>Discount:</span>
                     </div>
                     <div class="col-span-1 text-right">
-                        <span id="edit-discount" class="font-semibold">$0.00</span>
+                        <span id="edit-discount" class="font-semibold">€0.00</span>
                     </div>
                 </div>
-                <div class="flex justify-between text-lg">
-                    <span>Total:</span>
-                    <span id="edit-total" class="font-bold">$0.00</span>
+                <div class="flex justify-between">
+                    <span>Deposit:</span>
+                    <span id="edit-deposit" class="font-semibold">€0.00</span>
+                </div>
+                <div class="flex justify-between text-lg border-t pt-2">
+                    <span class="font-bold">Total:</span>
+                    <span id="edit-total" class="font-bold">€0.00</span>
                 </div>
             </div>
             
             <div class="flex justify-end space-x-3">
-                <button id="cancel-edit-order" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                <button id="cancel-edit-order" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition pos-text">
                     Cancel
                 </button>
-                <button id="save-edit-order" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                <button id="save-edit-order" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition pos-text">
                     Save Changes
                 </button>
             </div>
@@ -911,6 +968,7 @@
                 items: [],
                 subtotal: 0,
                 discount: 0,
+                deposit: 0,
                 total: 0,
                 discountApplied: false,
                 discountPercent: 10,
@@ -925,6 +983,7 @@
             reconnectAttempts: 0,
             maxReconnectAttempts: 3,
             pendingBeverageItem: null, // For zero sugar modal
+            DEPOSIT_PRICE: 0.25, // €0.25 deposit for dine-in drinks
             
             // Update connection status function
             updateConnectionStatus(online, error) {
@@ -1252,6 +1311,27 @@
                 }
             },
             
+            // Calculate deposit for drinks
+            calculateDeposit() {
+                try {
+                    if (this.currentOrder.takeaway) {
+                        return 0; // No deposit for takeaway
+                    }
+                    
+                    let depositCount = 0;
+                    this.currentOrder.items.forEach(item => {
+                        if (item.category === 'beverage') {
+                            depositCount += item.quantity;
+                        }
+                    });
+                    
+                    return depositCount * this.DEPOSIT_PRICE;
+                } catch (e) {
+                    errorLogger.logError("Calculate Deposit Error", { error: e.message, stack: e.stack });
+                    return 0;
+                }
+            },
+            
             // Order operations
             addItemToOrder(id, zeroSugar = false) {
                 try {
@@ -1326,11 +1406,15 @@
                         this.currentOrder.discount = this.currentOrder.subtotal * (this.currentOrder.discountPercent / 100);
                     }
                     
-                    this.currentOrder.total = this.currentOrder.subtotal - this.currentOrder.discount;
+                    // Calculate deposit
+                    this.currentOrder.deposit = this.calculateDeposit();
                     
-                    document.getElementById('subtotal').textContent = '$' + this.currentOrder.subtotal.toFixed(2);
-                    document.getElementById('discount').textContent = '$' + this.currentOrder.discount.toFixed(2);
-                    document.getElementById('total').textContent = '$' + this.currentOrder.total.toFixed(2);
+                    this.currentOrder.total = this.currentOrder.subtotal - this.currentOrder.discount + this.currentOrder.deposit;
+                    
+                    document.getElementById('subtotal').textContent = '€' + this.currentOrder.subtotal.toFixed(2);
+                    document.getElementById('discount').textContent = '€' + this.currentOrder.discount.toFixed(2);
+                    document.getElementById('deposit-total').textContent = '€' + this.currentOrder.deposit.toFixed(2);
+                    document.getElementById('total').textContent = '€' + this.currentOrder.total.toFixed(2);
                     
                     document.getElementById('amount-received').value = '';
                     document.getElementById('change').value = '';
@@ -1365,7 +1449,7 @@
                 try {
                     if (amountReceived >= this.currentOrder.total) {
                         const change = amountReceived - this.currentOrder.total;
-                        document.getElementById('change').value = '$' + change.toFixed(2);
+                        document.getElementById('change').value = '€' + change.toFixed(2);
                     } else {
                         document.getElementById('change').value = 'Insufficient amount';
                     }
@@ -1380,6 +1464,7 @@
                         items: [],
                         subtotal: 0,
                         discount: 0,
+                        deposit: 0,
                         total: 0,
                         discountApplied: false,
                         discountPercent: 10,
@@ -1421,6 +1506,7 @@
                         items: [...this.currentOrder.items],
                         subtotal: this.currentOrder.subtotal,
                         discount: this.currentOrder.discount,
+                        deposit: this.currentOrder.deposit,
                         discountPercent: this.currentOrder.discountPercent,
                         total: this.currentOrder.total,
                         timestamp: new Date().toISOString(),
@@ -1498,14 +1584,226 @@
                     notifications.error(`❌ Failed to complete order: ${e.message}`);
                 }
             },
+
+            // Edit order functionality
+            editOrder(orderId, orderType) {
+                try {
+                    let order;
+                    if (orderType === 'kitchen') {
+                        order = this.kitchenOrders.find(o => o.id == orderId);
+                    } else {
+                        order = this.orderHistory.find(o => o.id == orderId);
+                    }
+                    
+                    if (!order) return;
+                    
+                    document.getElementById('edit-order-id').value = orderId;
+                    document.getElementById('edit-order-type').value = orderType;
+                    document.getElementById('edit-discount-percent').value = order.discountPercent || 0;
+                    
+                    this.renderEditOrderItems(order);
+                    this.updateEditOrderTotals(order);
+                    
+                    document.getElementById('edit-order-modal').classList.remove('hidden');
+                } catch (e) {
+                    errorLogger.logError("Edit Order Error", { error: e.message, stack: e.stack, orderId, orderType });
+                    notifications.error(`❌ Failed to edit order: ${e.message}`);
+                }
+            },
+
+            renderEditOrderItems(order) {
+                try {
+                    const container = document.getElementById('edit-order-items');
+                    container.innerHTML = '';
+                    
+                    order.items.forEach((item, index) => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b dark:border-gray-700';
+                        row.innerHTML = `
+                            <td class="py-2 pos-text">${item.displayName || item.name}</td>
+                            <td class="py-2 text-center">
+                                <input type="number" min="1" value="${item.quantity}" 
+                                       class="w-16 p-1 border rounded text-center pos-text edit-item-qty" 
+                                       data-index="${index}">
+                            </td>
+                            <td class="py-2 text-right pos-text">€${item.total.toFixed(2)}</td>
+                            <td class="py-2 text-right">
+                                <button class="remove-edit-item-btn text-red-500 hover:text-red-700" data-index="${index}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        container.appendChild(row);
+                    });
+                } catch (e) {
+                    errorLogger.logError("Render Edit Order Items Error", { error: e.message, stack: e.stack });
+                }
+            },
+
+            updateEditOrderTotals(order) {
+                try {
+                    const subtotal = order.items.reduce((sum, item) => sum + item.total, 0);
+                    const discountPercent = parseFloat(document.getElementById('edit-discount-percent').value) || 0;
+                    const discount = subtotal * (discountPercent / 100);
+                    
+                    // Calculate deposit for edit
+                    let deposit = 0;
+                    if (!order.takeaway) {
+                        let depositCount = 0;
+                        order.items.forEach(item => {
+                            if (item.category === 'beverage') {
+                                depositCount += item.quantity;
+                            }
+                        });
+                        deposit = depositCount * this.DEPOSIT_PRICE;
+                    }
+                    
+                    const total = subtotal - discount + deposit;
+                    
+                    document.getElementById('edit-subtotal').textContent = '€' + subtotal.toFixed(2);
+                    document.getElementById('edit-discount').textContent = '€' + discount.toFixed(2);
+                    document.getElementById('edit-deposit').textContent = '€' + deposit.toFixed(2);
+                    document.getElementById('edit-total').textContent = '€' + total.toFixed(2);
+                } catch (e) {
+                    errorLogger.logError("Update Edit Order Totals Error", { error: e.message, stack: e.stack });
+                }
+            },
+
+            saveEditOrder() {
+                try {
+                    const orderId = document.getElementById('edit-order-id').value;
+                    const orderType = document.getElementById('edit-order-type').value;
+                    
+                    let order;
+                    let orderArray;
+                    let collection;
+                    
+                    if (orderType === 'kitchen') {
+                        orderArray = this.kitchenOrders;
+                        collection = 'kitchenOrders';
+                    } else {
+                        orderArray = this.orderHistory;
+                        collection = 'orderHistory';
+                    }
+                    
+                    order = orderArray.find(o => o.id == orderId);
+                    if (!order) return;
+                    
+                    // Update quantities
+                    const qtyInputs = document.querySelectorAll('.edit-item-qty');
+                    qtyInputs.forEach(input => {
+                        const index = parseInt(input.dataset.index);
+                        const newQty = parseInt(input.value);
+                        if (newQty > 0) {
+                            order.items[index].quantity = newQty;
+                            order.items[index].total = order.items[index].quantity * order.items[index].price;
+                        }
+                    });
+                    
+                    // Update discount
+                    const discountPercent = parseFloat(document.getElementById('edit-discount-percent').value) || 0;
+                    order.discountPercent = discountPercent;
+                    
+                    // Recalculate totals
+                    order.subtotal = order.items.reduce((sum, item) => sum + item.total, 0);
+                    order.discount = order.subtotal * (discountPercent / 100);
+                    
+                    // Calculate deposit
+                    let deposit = 0;
+                    if (!order.takeaway) {
+                        let depositCount = 0;
+                        order.items.forEach(item => {
+                            if (item.category === 'beverage') {
+                                depositCount += item.quantity;
+                            }
+                        });
+                        deposit = depositCount * this.DEPOSIT_PRICE;
+                    }
+                    order.deposit = deposit;
+                    order.total = order.subtotal - order.discount + order.deposit;
+                    
+                    if (db && this.isOnline) {
+                        db.collection(collection).doc(orderId.toString()).set(order)
+                            .then(() => {
+                                notifications.success(`✅ Order #${orderId} updated`);
+                                document.getElementById('edit-order-modal').classList.add('hidden');
+                                if (orderType === 'kitchen') {
+                                    this.renderKitchenOrders();
+                                } else {
+                                    this.renderOrderHistory();
+                                    this.updateSalesStats();
+                                    this.updateHistoryTotalSales();
+                                }
+                            })
+                            .catch(error => {
+                                errorLogger.logError("Save Edit Order Firebase Error", { error: error.message });
+                                notifications.error(`❌ Failed to update order: ${error.message}`);
+                            });
+                    } else {
+                        notifications.success(`✅ Order #${orderId} updated (offline mode)`);
+                        document.getElementById('edit-order-modal').classList.add('hidden');
+                    }
+                } catch (e) {
+                    errorLogger.logError("Save Edit Order Error", { error: e.message, stack: e.stack });
+                    notifications.error(`❌ Failed to save order changes: ${e.message}`);
+                }
+            },
+
+            deleteOrder(orderId, orderType) {
+                try {
+                    if (!confirm(`Are you sure you want to delete order #${orderId}?`)) {
+                        return;
+                    }
+                    
+                    let orderArray;
+                    let collection;
+                    
+                    if (orderType === 'kitchen') {
+                        orderArray = this.kitchenOrders;
+                        collection = 'kitchenOrders';
+                    } else {
+                        orderArray = this.orderHistory;
+                        collection = 'orderHistory';
+                    }
+                    
+                    const index = orderArray.findIndex(o => o.id == orderId);
+                    if (index === -1) return;
+                    
+                    if (db && this.isOnline) {
+                        db.collection(collection).doc(orderId.toString()).delete()
+                            .then(() => {
+                                orderArray.splice(index, 1);
+                                notifications.success(`✅ Order #${orderId} deleted`);
+                                if (orderType === 'kitchen') {
+                                    this.renderKitchenOrders();
+                                } else {
+                                    this.renderOrderHistory();
+                                    this.updateSalesStats();
+                                    this.updateHistoryTotalSales();
+                                }
+                            })
+                            .catch(error => {
+                                errorLogger.logError("Delete Order Firebase Error", { error: error.message });
+                                notifications.error(`❌ Failed to delete order: ${error.message}`);
+                            });
+                    } else {
+                        orderArray.splice(index, 1);
+                        notifications.success(`✅ Order #${orderId} deleted (offline mode)`);
+                    }
+                } catch (e) {
+                    errorLogger.logError("Delete Order Error", { error: e.message, stack: e.stack, orderId, orderType });
+                    notifications.error(`❌ Failed to delete order: ${e.message}`);
+                }
+            },
             
             // Sales statistics
             updateSalesStats() {
                 try {
                     if (this.orderHistory.length === 0) {
                         document.getElementById('total-orders-count').textContent = '0';
-                        document.getElementById('total-revenue').textContent = '$0.00';
-                        document.getElementById('average-order-value').textContent = '$0.00';
+                        document.getElementById('total-revenue').textContent = '€0.00';
+                        document.getElementById('deposit-revenue').textContent = '€0.00';
+                        document.getElementById('average-order-value').textContent = '€0.00';
                         document.getElementById('no-top-items').classList.remove('hidden');
                         document.getElementById('top-items').innerHTML = '';
                         this.updateAvailabilityProgress();
@@ -1514,11 +1812,14 @@
                     
                     document.getElementById('total-orders-count').textContent = this.orderHistory.length;
                     
-                    const totalRevenue = this.orderHistory.reduce((sum, order) => sum + order.total, 0);
-                    document.getElementById('total-revenue').textContent = '$' + totalRevenue.toFixed(2);
+                    const totalRevenue = this.orderHistory.reduce((sum, order) => sum + (order.total - (order.deposit || 0)), 0);
+                    const totalDeposit = this.orderHistory.reduce((sum, order) => sum + (order.deposit || 0), 0);
+                    
+                    document.getElementById('total-revenue').textContent = '€' + totalRevenue.toFixed(2);
+                    document.getElementById('deposit-revenue').textContent = '€' + totalDeposit.toFixed(2);
                     
                     const avgOrderValue = totalRevenue / this.orderHistory.length;
-                    document.getElementById('average-order-value').textContent = '$' + avgOrderValue.toFixed(2);
+                    document.getElementById('average-order-value').textContent = '€' + avgOrderValue.toFixed(2);
                     
                     // Top selling items with goal progress
                     const itemSales = {};
@@ -1566,10 +1867,10 @@
                             }
                             
                             row.innerHTML = `
-                                <td class="py-2">${item.name}</td>
-                                <td class="py-2 text-right">${item.quantity}</td>
-                                <td class="py-2 text-right">$${item.revenue.toFixed(2)}</td>
-                                <td class="py-2 text-right">${progressDisplay}</td>
+                                <td class="py-2 pos-text">${item.name}</td>
+                                <td class="py-2 text-right pos-text">${item.quantity}</td>
+                                <td class="py-2 text-right pos-text">€${item.revenue.toFixed(2)}</td>
+                                <td class="py-2 text-right pos-text">${progressDisplay}</td>
                             `;
                             topItemsContainer.appendChild(row);
                         });
@@ -1620,8 +1921,8 @@
                         progressBar.className = 'mb-4';
                         progressBar.innerHTML = `
                             <div class="flex justify-between mb-1">
-                                <span class="font-medium">${item.name}</span>
-                                <span>${sold}/${item.availabilityGoal} (${percentage.toFixed(1)}%)</span>
+                                <span class="font-medium pos-text">${item.name}</span>
+                                <span class="pos-text">${sold}/${item.availabilityGoal} (${percentage.toFixed(1)}%)</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                                 <div class="${progressClass} h-2.5 rounded-full transition-all duration-300" style="width: ${Math.min(percentage, 100)}%"></div>
@@ -1637,12 +1938,16 @@
             updateHistoryTotalSales() {
                 try {
                     if (this.orderHistory.length === 0) {
-                        document.getElementById('history-total-sales').textContent = '$0.00';
+                        document.getElementById('history-total-sales').textContent = '€0.00';
+                        document.getElementById('history-deposit-revenue').textContent = '€0.00';
                         return;
                     }
                     
-                    const totalSales = this.orderHistory.reduce((sum, order) => sum + order.total, 0);
-                    document.getElementById('history-total-sales').textContent = '$' + totalSales.toFixed(2);
+                    const totalSales = this.orderHistory.reduce((sum, order) => sum + (order.total - (order.deposit || 0)), 0);
+                    const totalDeposit = this.orderHistory.reduce((sum, order) => sum + (order.deposit || 0), 0);
+                    
+                    document.getElementById('history-total-sales').textContent = '€' + totalSales.toFixed(2);
+                    document.getElementById('history-deposit-revenue').textContent = '€' + totalDeposit.toFixed(2);
                 } catch (e) {
                     errorLogger.logError("Update History Total Sales Error", { error: e.message, stack: e.stack });
                 }
@@ -1651,7 +1956,7 @@
             // CSV Export
             downloadCSV() {
                 try {
-                    let kitchenOrdersCSV = 'Order ID,Date,Time,Type,Items,Notes,Subtotal,Discount,Total\n';
+                    let kitchenOrdersCSV = 'Order ID,Date,Time,Type,Items,Notes,Subtotal,Discount,Deposit,Total\n';
                     
                     this.kitchenOrders.forEach(order => {
                         const date = new Date(order.timestamp);
@@ -1665,10 +1970,10 @@
                         const orderType = order.takeaway ? 'Takeaway' : 'Dine In';
                         const notes = (order.notes || '').replace(/"/g, '""');
                         
-                        kitchenOrdersCSV += `${order.id},${dateFormatted},${timeFormatted},${orderType},"${itemsList}","${notes}",${order.subtotal.toFixed(2)},${order.discount.toFixed(2)},${order.total.toFixed(2)}\n`;
+                        kitchenOrdersCSV += `${order.id},${dateFormatted},${timeFormatted},${orderType},"${itemsList}","${notes}",${order.subtotal.toFixed(2)},${order.discount.toFixed(2)},${(order.deposit || 0).toFixed(2)},${order.total.toFixed(2)}\n`;
                     });
                     
-                    let historyCSV = 'Order ID,Date,Time,Type,Items,Notes,Subtotal,Discount,Total\n';
+                    let historyCSV = 'Order ID,Date,Time,Type,Items,Notes,Subtotal,Discount,Deposit,Total\n';
                     
                     this.orderHistory.forEach(order => {
                         const date = new Date(order.timestamp);
@@ -1682,7 +1987,7 @@
                         const orderType = order.takeaway ? 'Takeaway' : 'Dine In';
                         const notes = (order.notes || '').replace(/"/g, '""');
                         
-                        historyCSV += `${order.id},${dateFormatted},${timeFormatted},${orderType},"${itemsList}","${notes}",${order.subtotal.toFixed(2)},${order.discount.toFixed(2)},${order.total.toFixed(2)}\n`;
+                        historyCSV += `${order.id},${dateFormatted},${timeFormatted},${orderType},"${itemsList}","${notes}",${order.subtotal.toFixed(2)},${order.discount.toFixed(2)},${(order.deposit || 0).toFixed(2)},${order.total.toFixed(2)}\n`;
                     });
                     
                     const combinedCSV = 
@@ -1737,11 +2042,11 @@
                         button.className = 'bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition shadow-sm text-left';
                         
                         button.innerHTML = `
-                            <div class="flex justify-between items-center">
-                                <div class="font-medium truncate">${item.name}</div>
-                                <div class="text-${category}"><i class="fas fa-${icon}"></i></div>
+                            <div class="flex justify-between items-center mb-1">
+                                <div class="font-medium text-sm pos-text truncate pr-2" title="${item.name}">${item.name}</div>
+                                <div class="text-${category} flex-shrink-0"><i class="fas fa-${icon}"></i></div>
                             </div>
-                            <div class="text-primary font-bold">$${item.price.toFixed(2)}</div>
+                            <div class="text-primary font-bold pos-text">€${item.price.toFixed(2)}</div>
                         `;
                         button.dataset.id = item.id;
                         container.appendChild(button);
@@ -1788,17 +2093,17 @@
                             const progressDisplay = goal > 0 ? `${((sold / goal) * 100).toFixed(1)}%` : 'N/A';
                             
                             row.innerHTML = `
-                                <td class="py-3">${item.name}</td>
-                                <td class="py-3">${categoryDisplay}</td>
-                                <td class="py-3 text-right">$${item.price.toFixed(2)}</td>
-                                <td class="py-3 text-right">${goal || 'Not Set'}</td>
-                                <td class="py-3 text-right">${sold}</td>
-                                <td class="py-3 text-right">${progressDisplay}</td>
+                                <td class="py-3 pos-text">${item.name}</td>
+                                <td class="py-3 pos-text">${categoryDisplay}</td>
+                                <td class="py-3 text-right pos-text">€${item.price.toFixed(2)}</td>
+                                <td class="py-3 text-right pos-text">${goal || 'Not Set'}</td>
+                                <td class="py-3 text-right pos-text">${sold}</td>
+                                <td class="py-3 text-right pos-text">${progressDisplay}</td>
                                 <td class="py-3 text-right">
-                                    <button class="edit-item-btn bg-blue-500 text-white px-2 py-1 rounded-md mr-2 hover:bg-blue-600 transition" data-id="${item.id}">
+                                    <button class="edit-item-btn bg-blue-500 text-white px-2 py-1 rounded-md mr-2 hover:bg-blue-600 transition text-sm pos-text" data-id="${item.id}">
                                         Edit
                                     </button>
-                                    <button class="delete-item-btn bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition" data-id="${item.id}">
+                                    <button class="delete-item-btn bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition text-sm pos-text" data-id="${item.id}">
                                         Delete
                                     </button>
                                 </td>
@@ -1820,11 +2125,11 @@
                         const row = document.createElement('tr');
                         row.className = 'border-b dark:border-gray-700';
                         row.innerHTML = `
-                            <td class="py-2">${item.displayName || item.name}</td>
-                            <td class="py-2 text-center">${item.quantity}</td>
-                            <td class="py-2 text-right">$${item.total.toFixed(2)}</td>
+                            <td class="py-2 pos-text text-xs" title="${item.displayName || item.name}">${(item.displayName || item.name).length > 12 ? (item.displayName || item.name).substring(0, 12) + '...' : (item.displayName || item.name)}</td>
+                            <td class="py-2 text-center pos-text text-xs">${item.quantity}</td>
+                            <td class="py-2 text-right pos-text text-xs">€${item.total.toFixed(2)}</td>
                             <td class="py-2 text-right">
-                                <button class="remove-item-btn text-red-500 hover:text-red-700" data-id="${item.id}" data-zero-sugar="${item.zeroSugar}">
+                                <button class="remove-item-btn text-red-500 hover:text-red-700 text-xs" data-id="${item.id}" data-zero-sugar="${item.zeroSugar}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>
@@ -1866,27 +2171,33 @@
                             order.items.forEach(item => {
                                 itemsHtml += `
                                     <div class="flex justify-between mb-1">
-                                        <span>${item.quantity}x ${item.displayName || item.name}</span>
-                                        <span>$${item.total.toFixed(2)}</span>
+                                        <span class="pos-text">${item.quantity}x ${item.displayName || item.name}</span>
+                                        <span class="pos-text">€${item.total.toFixed(2)}</span>
                                     </div>
                                 `;
                             });
                             
                             const orderType = order.takeaway ? 
-                                '<span class="inline-block bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold">TAKEAWAY</span>' :
-                                '<span class="inline-block bg-green-500 text-white px-2 py-1 rounded text-xs font-bold">DINE IN</span>';
+                                '<span class="inline-block bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold pos-text">TAKEAWAY</span>' :
+                                '<span class="inline-block bg-green-500 text-white px-2 py-1 rounded text-xs font-bold pos-text">DINE IN</span>';
                             
                             const notes = order.notes ? 
                                 `<div class="mt-2 p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded border-l-4 border-yellow-500">
-                                    <strong>Notes:</strong> ${order.notes}
+                                    <strong class="pos-text">Notes:</strong> <span class="pos-text">${order.notes}</span>
+                                </div>` : '';
+
+                            const depositInfo = order.deposit && order.deposit > 0 ? 
+                                `<div class="flex justify-between text-sm pos-text">
+                                    <span>Deposit:</span>
+                                    <span>€${order.deposit.toFixed(2)}</span>
                                 </div>` : '';
                             
                             orderCard.innerHTML = `
                                 <div class="flex justify-between items-center mb-3">
-                                    <h3 class="font-bold text-lg">#${order.id}</h3>
+                                    <h3 class="font-bold text-lg pos-header">#${order.id}</h3>
                                     <div class="flex flex-col items-end">
                                         ${orderType}
-                                        <span class="text-sm text-gray-600 dark:text-gray-400 mt-1">${this.formatDateTime(order.timestamp)}</span>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400 mt-1 pos-text">${this.formatDateTime(order.timestamp)}</span>
                                     </div>
                                 </div>
                                 <div class="mb-4">
@@ -1894,13 +2205,28 @@
                                 </div>
                                 ${notes}
                                 <div class="border-t dark:border-red-800 pt-2 mb-3">
-                                    <div class="flex justify-between font-bold">
+                                    <div class="flex justify-between text-sm pos-text">
+                                        <span>Subtotal:</span>
+                                        <span>€${order.subtotal.toFixed(2)}</span>
+                                    </div>
+                                    ${order.discount > 0 ? `<div class="flex justify-between text-sm pos-text">
+                                        <span>Discount:</span>
+                                        <span>-€${order.discount.toFixed(2)}</span>
+                                    </div>` : ''}
+                                    ${depositInfo}
+                                    <div class="flex justify-between font-bold pos-text">
                                         <span>Total:</span>
-                                        <span>$${order.total.toFixed(2)}</span>
+                                        <span>€${order.total.toFixed(2)}</span>
                                     </div>
                                 </div>
                                 <div class="flex space-x-2">
-                                    <button class="complete-order-btn flex-grow bg-kitchen text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition" data-id="${order.id}">
+                                    <button class="edit-order-btn flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition text-sm pos-text" data-id="${order.id}" data-type="kitchen">
+                                        <i class="fas fa-edit mr-1"></i> Edit
+                                    </button>
+                                    <button class="delete-order-btn flex-1 bg-gray-500 text-white py-2 rounded-lg font-semibold hover:bg-gray-600 transition text-sm pos-text" data-id="${order.id}" data-type="kitchen">
+                                        <i class="fas fa-trash mr-1"></i> Delete
+                                    </button>
+                                    <button class="complete-order-btn flex-1 bg-kitchen text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition text-sm pos-text" data-id="${order.id}">
                                         <i class="fas fa-check mr-1"></i> Complete
                                     </button>
                                 </div>
@@ -1934,21 +2260,24 @@
                             ).join(', ');
                             
                             const orderType = order.takeaway ? 
-                                '<span class="inline-block bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold">TAKEAWAY</span>' :
-                                '<span class="inline-block bg-green-500 text-white px-2 py-1 rounded text-xs font-bold">DINE IN</span>';
+                                '<span class="inline-block bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold pos-text">TAKEAWAY</span>' :
+                                '<span class="inline-block bg-green-500 text-white px-2 py-1 rounded text-xs font-bold pos-text">DINE IN</span>';
                             
                             const notes = order.notes || '';
                             
                             row.innerHTML = `
-                                <td class="py-3">#${order.id}</td>
-                                <td class="py-3">${this.formatDateTime(order.timestamp)}</td>
+                                <td class="py-3 pos-text">#${order.id}</td>
+                                <td class="py-3 pos-text">${this.formatDateTime(order.timestamp)}</td>
                                 <td class="py-3">${orderType}</td>
-                                <td class="py-3">${itemsList}</td>
-                                <td class="py-3 max-w-xs truncate" title="${notes}">${notes}</td>
-                                <td class="py-3 text-right font-semibold">$${order.total.toFixed(2)}</td>
+                                <td class="py-3 pos-text">${itemsList}</td>
+                                <td class="py-3 max-w-xs truncate pos-text" title="${notes}">${notes}</td>
+                                <td class="py-3 text-right font-semibold pos-text">€${order.total.toFixed(2)}</td>
                                 <td class="py-3 text-right">
-                                    <button class="bg-gray-500 text-white px-2 py-1 rounded-md hover:bg-gray-600 transition text-sm">
-                                        <i class="fas fa-eye"></i> View
+                                    <button class="edit-order-btn bg-blue-500 text-white px-2 py-1 rounded-md mr-1 hover:bg-blue-600 transition text-sm pos-text" data-id="${order.id}" data-type="history">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="delete-order-btn bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition text-sm pos-text" data-id="${order.id}" data-type="history">
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
                             `;
@@ -1998,11 +2327,12 @@
                     document.getElementById('tab-summary').addEventListener('click', () => this.showTab('summary-tab'));
                     document.getElementById('tab-logs').addEventListener('click', () => this.showTab('logs-tab'));
                     
-                    // Takeaway toggle
+                    // Takeaway toggle - update deposit calculation
                     document.getElementById('takeaway-toggle').addEventListener('change', (e) => {
                         const label = document.getElementById('takeaway-label');
                         this.currentOrder.takeaway = e.target.checked;
                         label.textContent = e.target.checked ? 'Takeaway' : 'Dine In';
+                        this.updateOrderTotals(); // Recalculate deposit
                     });
                     
                     // Zero sugar modal
@@ -2128,11 +2458,104 @@
                         }
                     });
                     
-                    // Kitchen Orders
+                    // Kitchen Orders - Enhanced with edit/delete
                     document.getElementById('kitchen-orders').addEventListener('click', (e) => {
                         if (e.target.closest('.complete-order-btn')) {
                             const button = e.target.closest('.complete-order-btn');
                             this.completeOrder(button.dataset.id);
+                        }
+                        
+                        if (e.target.closest('.edit-order-btn')) {
+                            const button = e.target.closest('.edit-order-btn');
+                            this.editOrder(button.dataset.id, button.dataset.type);
+                        }
+                        
+                        if (e.target.closest('.delete-order-btn')) {
+                            const button = e.target.closest('.delete-order-btn');
+                            this.deleteOrder(button.dataset.id, button.dataset.type);
+                        }
+                    });
+
+                    // Order History - Enhanced with edit/delete
+                    document.getElementById('history-items').addEventListener('click', (e) => {
+                        if (e.target.closest('.edit-order-btn')) {
+                            const button = e.target.closest('.edit-order-btn');
+                            this.editOrder(button.dataset.id, button.dataset.type);
+                        }
+                        
+                        if (e.target.closest('.delete-order-btn')) {
+                            const button = e.target.closest('.delete-order-btn');
+                            this.deleteOrder(button.dataset.id, button.dataset.type);
+                        }
+                    });
+
+                    // Edit Order Modal
+                    document.getElementById('cancel-edit-order').addEventListener('click', () => {
+                        document.getElementById('edit-order-modal').classList.add('hidden');
+                    });
+
+                    document.getElementById('save-edit-order').addEventListener('click', () => {
+                        this.saveEditOrder();
+                    });
+
+                    // Edit order items event delegation
+                    document.getElementById('edit-order-items').addEventListener('click', (e) => {
+                        if (e.target.closest('.remove-edit-item-btn')) {
+                            const button = e.target.closest('.remove-edit-item-btn');
+                            const index = parseInt(button.dataset.index);
+                            const orderId = document.getElementById('edit-order-id').value;
+                            const orderType = document.getElementById('edit-order-type').value;
+                            
+                            let order;
+                            if (orderType === 'kitchen') {
+                                order = this.kitchenOrders.find(o => o.id == orderId);
+                            } else {
+                                order = this.orderHistory.find(o => o.id == orderId);
+                            }
+                            
+                            if (order && order.items.length > 1) {
+                                order.items.splice(index, 1);
+                                this.renderEditOrderItems(order);
+                                this.updateEditOrderTotals(order);
+                            } else {
+                                notifications.warning('⚠️ Cannot remove the last item from order');
+                            }
+                        }
+                    });
+
+                    // Edit order quantity changes
+                    document.getElementById('edit-order-items').addEventListener('input', (e) => {
+                        if (e.target.classList.contains('edit-item-qty')) {
+                            const orderId = document.getElementById('edit-order-id').value;
+                            const orderType = document.getElementById('edit-order-type').value;
+                            
+                            let order;
+                            if (orderType === 'kitchen') {
+                                order = this.kitchenOrders.find(o => o.id == orderId);
+                            } else {
+                                order = this.orderHistory.find(o => o.id == orderId);
+                            }
+                            
+                            if (order) {
+                                this.updateEditOrderTotals(order);
+                            }
+                        }
+                    });
+
+                    // Edit order discount changes
+                    document.getElementById('edit-discount-percent').addEventListener('input', () => {
+                        const orderId = document.getElementById('edit-order-id').value;
+                        const orderType = document.getElementById('edit-order-type').value;
+                        
+                        let order;
+                        if (orderType === 'kitchen') {
+                            order = this.kitchenOrders.find(o => o.id == orderId);
+                        } else {
+                            order = this.orderHistory.find(o => o.id == orderId);
+                        }
+                        
+                        if (order) {
+                            this.updateEditOrderTotals(order);
                         }
                     });
                     
